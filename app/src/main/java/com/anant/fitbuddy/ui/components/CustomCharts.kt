@@ -76,6 +76,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.anant.fitbuddy.data.database.ExerciseDailySummary
 import com.anant.fitbuddy.data.database.FoodDailySummary
+import com.anant.fitbuddy.ui.i18n.AppI18n
+import com.anant.fitbuddy.ui.i18n.LocalAppLanguage
 import com.anant.fitbuddy.util.DateUtils
 import java.util.Calendar
 import kotlin.math.max
@@ -379,11 +381,13 @@ fun CustomLineChart(
             }
             val labelTarget = dayTargets.lastOrNull() ?: dayTargets.first()
             val labelY = targetY(labelTarget)
-            val targetLabel = if (dayTargets.distinct().size <= 1) {
-                "Target · $labelTarget"
-            } else {
-                "Target (varies)"
-            }
+            val targetLabel = AppI18n.translate(
+                if (dayTargets.distinct().size <= 1) {
+                    "Target · $labelTarget"
+                } else {
+                    "Target (varies)"
+                }
+            )
             drawText(
                 textMeasurer = textMeasurer,
                 text = targetLabel,
@@ -964,7 +968,7 @@ fun MetricLineChart(
                 )
                 drawText(
                     textMeasurer = textMeasurer,
-                    text = "Target · ${formatMetric(target)} kg",
+                    text = AppI18n.translate("Target · ${formatMetric(target)} kg"),
                     topLeft = Offset(leftPad + 6f, targetY - 28f),
                     style = TextStyle(
                         color = targetLineColor,

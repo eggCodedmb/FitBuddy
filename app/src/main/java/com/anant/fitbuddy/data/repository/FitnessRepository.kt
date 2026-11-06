@@ -2115,8 +2115,18 @@ class FitnessRepository(
                             qty * 6
                         )
                     }
+                    s.staples.any { d -> d.keywords.any { kw -> kw in query } } -> {
+                        val matched = s.staples.first { d -> d.keywords.any { kw -> kw in query } }
+                        Quintet(
+                            matched.name,
+                            matched.calories,
+                            matched.proteinG,
+                            matched.carbsG,
+                            matched.fatsG
+                        )
+                    }
                     else -> Quintet(
-                        input.ifBlank { "Indian Thali" }
+                        input.ifBlank { "Chinese Home Meal" }
                             .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
                         350, 12, 45, 10
                     )

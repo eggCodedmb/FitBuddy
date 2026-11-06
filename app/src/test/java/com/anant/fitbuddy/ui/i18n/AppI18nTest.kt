@@ -71,5 +71,21 @@ class AppI18nTest {
             "剩余 450 kcal",
             AppI18n.translate("450 kcal left", AppLanguage.ZH_CN, Locale.US)
         )
+        assertEquals(
+            "五星红旗",
+            AppI18n.translate("Chinese flag", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "拍照识别 · Gemini 2.5 Flash",
+            AppI18n.translate("Photo · Gemini 2.5 Flash", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "已记录 慢跑 · 消耗 250 kcal",
+            AppI18n.translate("Logged 慢跑 · -250 kcal", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "大部分时间久坐，极少有规划运动",
+            AppI18n.translate("Mostly seated with little planned exercise", AppLanguage.ZH_CN, Locale.US)
+        )
     }
 }

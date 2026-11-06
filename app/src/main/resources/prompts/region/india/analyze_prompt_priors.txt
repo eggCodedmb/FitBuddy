@@ -1,20 +1,22 @@
-Indian food priors (apply when identifying dishes from photos or Hinglish text):
-- Prefer familiar Indian dish names that match the plate; use clear regional markers
-  when present (idli, dosa, sambar, coconut chutney, medu vada, appam, Kerala-style
-  fish curry, misal, dhokla, momos, etc.).
-- Flatbreads: chapati / phulka / roti, tawa/stuffed paratha (aloo, gobi, paneer, mooli),
-  laccha paratha, naan, kulcha, bhatura, dosa/uttapam when those are obvious.
-- Dals & curries: dal tadka/fry, dal makhani, rajma, chole/chana masala, kadhi pakora,
-  paneer butter masala / palak paneer / kadhai paneer, butter chicken, egg bhurji,
-  keema — prefer these over generic "curry" or sambar when cues match.
-- Sabzi / sides: aloo gobi, bhindi, baingan bharta, mixed veg, raita, salad, pickle, papad.
-- Staples & combos users type loosely: "roti sabzi", "dal chawal", "2 parantha",
-  "chole bhature", "rajma chawal", "paneer bhurji", "aloo paratha with curd".
-- Street / snack: samosa, pakora, aloo tikki, golgappe/pani puri, chaat, pav bhaji,
-  chole kulche, jalebi, lassi, chai.
-- Cooking fats: when the dish is tadka, fried, buttery, or makhani and oil/ghee is not
-  stated, include "ghee" or "oil" as its OWN ingredient with a typical home amount
-  (often ~1 tsp / 5 g). Do not invent coconut oil unless the dish implies it.
-- Naming: use familiar Indian dish names in "dish_name" (Hinglish ok). Break
-  thalis and combos into named components (roti, dal, sabzi, rice, raita, bhatura)
-  rather than "mixed plate" — especially chole bhature, rajma chawal, dal chawal.
+Indian / Chinese & Asian food priors (optimised for Chinese home cooking, cafeteria meals, and takeout):
+- Prefer familiar Chinese dish names that match the plate; use clear regional or cooking-style markers
+  when present (steamed rice / 米饭, fried rice / 蛋炒饭, Lanzhou beef noodles / 兰州牛肉面,
+  wontons / 馄饨, dumplings / 水饺 / 煎饺, baozi / 包子, mantou / 馒头, jianbing / 煎饼果子,
+  youtiao / 油条, congee / 粥, hotpot / 火锅, malatang / 麻辣烫, etc.).
+- Staples & carbs: steamed white/brown rice (米饭/糙米饭), wheat or rice noodles (面条/米粉/米线),
+  steamed buns (馒头/花卷), stuffed buns (肉包/菜包/小笼包), dumplings (水饺/锅贴),
+  scallion pancakes (葱油饼/手抓饼), sweet potato / corn (红薯/玉米).
+- Home-style & stir-fry dishes: tomato scrambled eggs (番茄炒蛋), Kung Pao chicken (宫保鸡丁),
+  shredded pork with garlic sauce (鱼香肉丝), braised pork belly (红烧肉), twice-cooked pork (回锅肉),
+  stir-fried beef with peppers (小炒黄牛肉/青椒牛柳), Mapo tofu (麻婆豆腐), steamed fish (清蒸鱼),
+  braised chicken (黄焖鸡), poached/roasted chicken breast (白切鸡/鸡胸肉).
+- Vegetables & sides: stir-fried greens / bok choy / broccoli (清炒时蔬/上海青/西兰花),
+  shredded potato (酸辣土豆丝), cucumber salad (拍黄瓜), seaweed & egg drop soup (紫菜蛋花汤).
+- Breakfast & drinks: soy milk (豆浆), boiled/tea eggs (水煮蛋/茶叶蛋), youtiao (油条),
+  steamed buns, oats/milk, bubble tea / coffee.
+- Cooking fats: when the dish is stir-fried (炒), braised (红烧/焖), pan-fried (煎), or deep-fried (炸)
+  and cooking oil is not stated, include "cooking oil" (食用油) as its OWN ingredient with a typical
+  home/restaurant amount (often ~1–2 tsp / 5–10 g).
+- Naming: use clear dish names in "dish_name" (Chinese or English matching user input). Break
+  bento boxes, cafeteria trays, and multi-dish meals into named components (rice, main protein dish,
+  stir-fried veg, soup, cooking oil) rather than "mixed plate".

@@ -31,7 +31,7 @@ import androidx.compose.runtime.getValue
 /** Compact tiranga wash used inside insight / health-target buttons. */
 object TirangaInsightLoadingAnimation : LoadingAnimation {
     override val id: String = "tiranga_insight"
-    override val displayName: String = "Indian flag"
+    override val displayName: String = "Chinese flag"
     override val slots: Set<LoadingAnimationSlot> = setOf(LoadingAnimationSlot.INSIGHT)
     override val defaultCaptions: List<String> = JapanRowingLoadingAnimation.defaultCaptions
 
@@ -100,7 +100,7 @@ private fun TirangaInsightContent(
             )
         }
         Text(
-            text = "CRAFTED IN INDIA",
+            text = "CRAFTED IN CHINA",
             style = MaterialTheme.typography.labelSmall.copy(
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,

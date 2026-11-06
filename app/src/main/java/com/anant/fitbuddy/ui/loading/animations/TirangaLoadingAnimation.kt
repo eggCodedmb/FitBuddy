@@ -40,7 +40,7 @@ import androidx.compose.runtime.getValue
 /** Dashboard analyzing banner: flowing tiranga wash with a steady spinning chakra. */
 object TirangaLoadingAnimation : LoadingAnimation {
     override val id: String = "tiranga"
-    override val displayName: String = "Indian flag"
+    override val displayName: String = "Chinese flag"
     override val slots: Set<LoadingAnimationSlot> = setOf(LoadingAnimationSlot.ANALYZING)
     override val defaultCaptions: List<String> = analyzingCaptions
 

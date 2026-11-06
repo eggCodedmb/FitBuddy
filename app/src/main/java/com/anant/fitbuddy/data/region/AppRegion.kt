@@ -5,7 +5,7 @@ enum class AppRegion {
     INDIA, US, EUROPE, LATIN_AMERICA;
 
     fun displayName(): String = when (this) {
-        INDIA -> "India"
+        INDIA -> "China"
         US -> "North America"
         EUROPE -> "Europe"
         LATIN_AMERICA -> "Latin America"
@@ -13,7 +13,7 @@ enum class AppRegion {
 
     /** Compact label for tight UI (e.g. Settings segmented control). */
     fun shortDisplayName(): String = when (this) {
-        INDIA -> "India"
+        INDIA -> "China"
         US -> "N.Am"
         EUROPE -> "Europe"
         LATIN_AMERICA -> "LatAm"
@@ -28,16 +28,17 @@ enum class AppRegion {
     /** True when the picker should cycle official flags of member countries. */
     fun cyclesMemberFlags(): Boolean = memberCountryCodes().isNotEmpty()
 
-    /** ISO codes for countries included in this pack (empty for India). */
+    /** ISO codes for countries included in this pack (empty for China). */
     fun memberCountryCodes(): List<String> = RegionDetector.memberCountryCodes(this)
 
     companion object {
         /**
-         * Stored value is the enum name (`US`, `INDIA`, …). `NORTH_AMERICA` is accepted as an
-         * alias for [US] (US + Canada diet pack).
+         * Stored value is the enum name (`US`, `INDIA`, …). `CHINA` / `CN` map to [INDIA] (China
+         * diet pack), and `NORTH_AMERICA` is accepted as an alias for [US] (US + Canada diet pack).
          */
         fun fromStored(value: String?): AppRegion? {
             val key = value?.trim()?.uppercase()?.replace(' ', '_') ?: return null
+            if (key == "CHINA" || key == "CN" || key == "ZH" || key == "ZH_CN") return INDIA
             if (key == "NORTH_AMERICA") return US
             return entries.firstOrNull { it.name.equals(key, ignoreCase = true) }
         }

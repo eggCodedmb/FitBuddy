@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.anant.fitbuddy.ui.i18n.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,9 +31,8 @@ import androidx.compose.ui.unit.sp
 import com.anant.fitbuddy.data.region.AppRegion
 import com.anant.fitbuddy.data.region.RegionDetector
 import com.anant.fitbuddy.ui.loading.animations.accumulateScaledTime
-import com.anant.fitbuddy.ui.loading.animations.drawSpinningAshokaChakra
+import com.anant.fitbuddy.ui.loading.animations.drawChinaFiveStars
 import com.anant.fitbuddy.ui.loading.animations.drawTirangaFabric
-import kotlin.math.min
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
@@ -42,13 +40,13 @@ import androidx.compose.runtime.getValue
 private const val MEMBER_FLAG_CYCLE_MS = 1_000L
 
 /**
- * Region preview: India draws the Tiranga; multi-country packs cycle official member-country
- * flag emoji (Unicode regional indicators).
+ * Region preview: China draws the waving Five-star Red Flag (五星红旗); multi-country packs cycle
+ * official member-country flag emoji (Unicode regional indicators).
  */
 @Composable
 fun RegionFlagCanvas(region: AppRegion, modifier: Modifier = Modifier) {
     when {
-        region.hasOfficialFlag() -> IndiaFlagCanvas(modifier = modifier)
+        region.hasOfficialFlag() -> ChinaFlagCanvas(modifier = modifier)
         region.cyclesMemberFlags() -> RegionMemberFlagsCarousel(
             region = region,
             modifier = modifier,
@@ -63,7 +61,7 @@ fun RegionFlagCanvas(region: AppRegion, modifier: Modifier = Modifier) {
 @Composable
 fun RegionFlagThumbnail(region: AppRegion, modifier: Modifier = Modifier) {
     when {
-        region.hasOfficialFlag() -> IndiaFlagCanvas(modifier = modifier)
+        region.hasOfficialFlag() -> ChinaFlagCanvas(modifier = modifier)
         region.cyclesMemberFlags() -> RegionMemberFlagsCarousel(
             region = region,
             modifier = modifier,
@@ -75,7 +73,7 @@ fun RegionFlagThumbnail(region: AppRegion, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun IndiaFlagCanvas(modifier: Modifier = Modifier) {
+private fun ChinaFlagCanvas(modifier: Modifier = Modifier) {
     var timeMs by remember { mutableStateOf(0.0) }
     var lastFrame by remember { mutableLongStateOf(0L) }
 
@@ -90,7 +88,7 @@ private fun IndiaFlagCanvas(modifier: Modifier = Modifier) {
     }
 
     Canvas(modifier = modifier) {
-        drawIndiaFlag(timeMs)
+        drawChinaFlag(timeMs)
     }
 }
 
@@ -164,12 +162,7 @@ internal fun isoToFlagEmoji(iso2: String): String {
     return String(intArrayOf(first, second), 0, 2)
 }
 
-private fun DrawScope.drawIndiaFlag(timeMs: Double) {
+private fun DrawScope.drawChinaFlag(timeMs: Double) {
     drawTirangaFabric(timeMs = timeMs, columns = 56)
-    val center = Offset(size.width / 2f, size.height / 2f)
-    drawSpinningAshokaChakra(
-        center = center,
-        outerRadius = min(size.width, size.height) * 0.14f,
-        timeMs = timeMs
-    )
+    drawChinaFiveStars(timeMs = timeMs, fullFlagLayout = true)
 }

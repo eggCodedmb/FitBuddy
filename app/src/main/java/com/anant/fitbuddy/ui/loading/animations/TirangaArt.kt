@@ -5,25 +5,27 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import kotlin.math.PI
+import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sin
 
-internal val TirangaSaffron = Color(0xFFFF9933)
-internal val TirangaFlagWhite = Color(0xFFFFF8F0)
-internal val TirangaIndiaGreen = Color(0xFF138808)
-internal val TirangaChakraNavy = Color(0xFF000080)
+internal val ChinaFlagRed = Color(0xFFDE2910)
+internal val ChinaFlagDeepRed = Color(0xFFB81C0A)
+internal val ChinaFlagHighlightRed = Color(0xFFF23A22)
+internal val ChinaStarGold = Color(0xFFFFDE00)
+
+// Keep legacy color aliases mapped to Chinese flag palette for callers.
+internal val TirangaSaffron = ChinaFlagHighlightRed
+internal val TirangaFlagWhite = ChinaFlagRed
+internal val TirangaIndiaGreen = ChinaFlagDeepRed
+internal val TirangaChakraNavy = ChinaStarGold
 
 /**
- * Analyzing-banner tiranga wash: classic look with a slightly wider white band,
- * seam weights like the original, but incommensurate frequencies so it doesn't
- * settle into a short repeating loop.
+ * Waving Chinese red silk flag wash with subtle vertical fold shading and a travelling sheen.
  */
 internal fun DrawScope.drawTirangaFabric(
     timeMs: Double,
@@ -39,37 +41,34 @@ internal fun DrawScope.drawTirangaFabric(
     for (i in 0 until cols) {
         val x = i * (W / cols)
         val nx = i.toFloat() / cols
-        val drift = t * 0.00013
-        val wave1 = sin(nx * PI * 2.618 + t * 0.00203 + drift).toFloat()
-        val wave2 = sin(nx * PI * 1.732 - t * 0.00161 + 1.2 + drift * 0.7).toFloat()
-        val wave3 = cos(nx * PI * 3.142 + t * 0.00097 - drift * 1.3).toFloat()
-        val seamWobble = (wave1 * 0.045f + wave2 * 0.028f) * seamWobbleScale
-        val saffronEnd = (0.31f + seamWobble).coerceIn(0.20f, 0.45f)
-        val greenStart = (0.69f + seamWobble * 0.85f + wave3 * 0.02f)
-            .coerceIn(0.55f, 0.82f)
+        val wave1 = sin(nx * PI * 2.618 - t * 0.0022).toFloat()
+        val wave2 = cos(nx * PI * 4.15 - t * 0.0014 + 0.8).toFloat()
+        val fold = (wave1 * 0.65f + wave2 * 0.35f) * seamWobbleScale
 
-        val huePhase = (t * 0.00035 + nx * 1.8).toFloat()
-        drawTirangaColumnBands(
-            x = x,
-            colW = colW,
-            height = H,
-            saffronEnd = saffronEnd,
-            greenStart = greenStart,
-            saffron = flowingBandColor(
-                base = TirangaSaffron,
-                hueShiftDeg = sin(huePhase * 2f) * 4.5f,
-                lightness = 0.94f + 0.05f * sin(huePhase + 0.4f)
+        val topColor = flowingBandColor(
+            base = ChinaFlagRed,
+            hueShiftDeg = fold * 2.0f,
+            lightness = (1.0f + fold * 0.10f).coerceIn(0.84f, 1.12f)
+        )
+        val midColor = flowingBandColor(
+            base = ChinaFlagRed,
+            hueShiftDeg = fold * 1.5f,
+            lightness = (0.98f + fold * 0.12f).coerceIn(0.82f, 1.14f)
+        )
+        val botColor = flowingBandColor(
+            base = ChinaFlagDeepRed,
+            hueShiftDeg = fold * 1.8f,
+            lightness = (0.96f + fold * 0.10f).coerceIn(0.80f, 1.10f)
+        )
+
+        drawRect(
+            brush = Brush.verticalGradient(
+                colors = listOf(topColor, midColor, botColor),
+                startY = 0f,
+                endY = H
             ),
-            white = flowingBandColor(
-                base = TirangaFlagWhite,
-                hueShiftDeg = sin(huePhase * 1.3f + 1f) * 2f,
-                lightness = 0.97f + 0.025f * cos(huePhase * 0.8f)
-            ),
-            green = flowingBandColor(
-                base = TirangaIndiaGreen,
-                hueShiftDeg = cos(huePhase * 1.7f) * 4f,
-                lightness = 0.93f + 0.06f * sin(huePhase * 1.1f + 2f)
-            )
+            topLeft = Offset(x, 0f),
+            size = Size(colW, H)
         )
     }
 
@@ -88,276 +87,144 @@ internal fun DrawScope.drawTirangaFabric(
 }
 
 /**
- * Insights-button tiranga wash: freer stacked incommensurate waves with
- * per-column phase salt so saffron and green seams drift independently.
+ * Insights-button waving Chinese red silk wash.
  */
 internal fun DrawScope.drawTirangaInsightFabric(
     timeMs: Double,
     columns: Int = 48,
     seamWobbleScale: Float = 1.35f,
 ) {
-    val W = size.width
-    val H = size.height
-    val t = timeMs
-    val cols = columns.coerceAtLeast(8)
-    val colW = W / cols + 1f
-    val gust = 0.72f + 0.28f * fabricNoise(t * 0.00041, 0.37)
-
-    for (i in 0 until cols) {
-        val x = i * (W / cols)
-        val nx = i.toFloat() / cols
-        val salt = columnSalt(i)
-        val saffronWobble =
-            fabricField(nx, t, salt, seed = 0.0) * 0.055f * seamWobbleScale * gust
-        val greenWobble =
-            fabricField(nx, t, salt, seed = 2.7) * 0.052f * seamWobbleScale * gust
-        val whiteDrift = fabricField(nx, t, salt, seed = 5.1) * 0.022f * seamWobbleScale
-
-        val saffronEnd = (0.34f + saffronWobble).coerceIn(0.20f, 0.50f)
-        val greenStart = (0.66f + greenWobble + whiteDrift * 0.35f)
-            .coerceIn(0.50f, 0.82f)
-            .coerceAtLeast(saffronEnd + 0.12f)
-
-        val huePhase = fabricField(nx, t * 0.85, salt, seed = 8.3) * 0.55f +
-            (t * 0.00028 + nx * 1.3).toFloat()
-        drawTirangaColumnBands(
-            x = x,
-            colW = colW,
-            height = H,
-            saffronEnd = saffronEnd,
-            greenStart = greenStart,
-            saffron = flowingBandColor(
-                base = TirangaSaffron,
-                hueShiftDeg = sin(huePhase * 2.1f + salt) * 5.5f,
-                lightness = 0.93f + 0.06f * sin(huePhase + salt * 0.7f)
-            ),
-            white = flowingBandColor(
-                base = TirangaFlagWhite,
-                hueShiftDeg = sin(huePhase * 1.4f + 1.3f) * 2.4f,
-                lightness = 0.96f + 0.03f * cos(huePhase * 0.9f + salt)
-            ),
-            green = flowingBandColor(
-                base = TirangaIndiaGreen,
-                hueShiftDeg = cos(huePhase * 1.9f + salt * 1.1f) * 5f,
-                lightness = 0.92f + 0.07f * sin(huePhase * 1.2f + 2.1f)
-            )
-        )
-    }
-
-    val sheenDrift = fabricNoise(t * 0.00019, 1.1) * W * 0.45f
-    val sheenBase = ((t * 0.055 + sheenDrift) % (W * 1.6) - W * 0.3).toFloat()
-    val sheenAlpha = 0.08f + 0.10f * (0.5f + 0.5f * fabricNoise(t * 0.00033, 2.4))
-    val sheenWidth = W * (0.28f + 0.12f * fabricNoise(t * 0.00027, 3.2))
-    drawRect(
-        brush = Brush.horizontalGradient(
-            colors = listOf(
-                Color.Transparent,
-                Color.White.copy(alpha = sheenAlpha),
-                Color.Transparent
-            ),
-            startX = sheenBase,
-            endX = sheenBase + sheenWidth
-        )
-    )
+    drawTirangaFabric(timeMs = timeMs, columns = columns, seamWobbleScale = seamWobbleScale)
 }
 
-private fun DrawScope.drawTirangaColumnBands(
-    x: Float,
-    colW: Float,
-    height: Float,
-    saffronEnd: Float,
-    greenStart: Float,
-    saffron: Color,
-    white: Color,
-    green: Color,
-) {
-    val y0 = 0f
-    val y1 = saffronEnd * height
-    val y2 = greenStart * height
-    val y3 = height
-
-    drawRect(
-        brush = Brush.verticalGradient(
-            colors = listOf(
-                saffron.copy(alpha = 0.95f),
-                saffron,
-                lerpColor(saffron, white, 0.55f)
-            ),
-            startY = y0,
-            endY = y1
-        ),
-        topLeft = Offset(x, y0),
-        size = Size(colW, y1 - y0)
-    )
-    drawRect(
-        brush = Brush.verticalGradient(
-            colors = listOf(
-                lerpColor(saffron, white, 0.7f),
-                white,
-                lerpColor(white, green, 0.35f)
-            ),
-            startY = y1,
-            endY = y2
-        ),
-        topLeft = Offset(x, y1),
-        size = Size(colW, (y2 - y1).coerceAtLeast(1f))
-    )
-    drawRect(
-        brush = Brush.verticalGradient(
-            colors = listOf(
-                lerpColor(white, green, 0.45f),
-                green,
-                green.copy(alpha = 0.92f)
-            ),
-            startY = y2,
-            endY = y3
-        ),
-        topLeft = Offset(x, y2),
-        size = Size(colW, y3 - y2)
-    )
-}
-
-/** Continuous ≈[-1, 1] field from stacked incommensurate sines. */
-private fun fabricField(nx: Float, tMs: Double, salt: Float, seed: Double): Float {
-    val t = tMs
-    val s = seed + salt
-    val a = sin(nx * PI * 2.17 + t * 0.0019 + s).toFloat()
-    val b = sin(nx * PI * 3.73 - t * 0.00131 + s * 1.7).toFloat()
-    val c = cos(nx * PI * 1.19 + t * 0.00077 + s * 0.4).toFloat()
-    val d = sin(nx * PI * 5.41 + t * 0.00263 - s * 2.1).toFloat()
-    val e = cos(t * 0.00053 + nx * 7.9 + s).toFloat()
-    return (a * 0.38f + b * 0.27f + c * 0.18f + d * 0.12f + e * 0.05f)
-}
-
-private fun fabricNoise(tMs: Double, seed: Double): Float =
-    sin(tMs * 2.17 + seed).toFloat() * 0.55f +
-        cos(tMs * 3.41 - seed * 1.3).toFloat() * 0.30f +
-        sin(tMs * 0.97 + seed * 2.7).toFloat() * 0.15f
-
-/** Deterministic [0, 2π)-ish salt from column index. */
-private fun columnSalt(i: Int): Float {
-    val n = (i * 1103515245 + 12345) and 0x7fffffff
-    return (n % 10_000) / 10_000f * (2f * PI.toFloat())
-}
-
-/** Spinning Ashoka chakra with a soft navy halo. */
-internal fun DrawScope.drawSpinningAshokaChakra(
-    center: Offset,
-    outerRadius: Float,
+/**
+ * Draws the official Five-star Red Flag (五星红旗) golden star canton constellation.
+ *
+ * When [fullFlagLayout] is true (region flag preview & thumbnail), the 5 stars are positioned
+ * in the upper-left canton using the standard 30×20 national flag grid.
+ * When false (compact banner/button emblem around [center]), the 5-star emblem is centered
+ * around [center] with scale [outerRadius].
+ */
+internal fun DrawScope.drawChinaFiveStars(
     timeMs: Double,
-    color: Color = TirangaChakraNavy,
+    fullFlagLayout: Boolean = true,
+    center: Offset = Offset(size.width / 2f, size.height / 2f),
+    outerRadius: Float = min(size.width, size.height) * 0.18f,
+    color: Color = ChinaStarGold
 ) {
-    val degrees = ((timeMs * 0.12) % 360.0).toFloat()
+    if (fullFlagLayout) {
+        val unitX = size.width / 30f
+        val unitY = size.height / 20f
+        val unitR = min(unitX, unitY)
 
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                color.copy(alpha = 0.18f),
-                Color.Transparent
-            ),
-            center = center,
-            radius = outerRadius * 1.55f
-        ),
-        radius = outerRadius * 1.55f,
-        center = center
-    )
+        fun waveOffsetY(gridX: Float): Float {
+            val nx = gridX / 30f
+            return (sin(nx * PI * 2.618 - timeMs * 0.0022) * size.height * 0.018).toFloat()
+        }
 
-    rotate(degrees = degrees, pivot = center) {
-        drawAshokaChakra(
-            center = center,
-            outerRadius = outerRadius,
+        val bigCenter = Offset(5f * unitX, 5f * unitY + waveOffsetY(5f))
+        val bigR = 3f * unitR
+        drawFivePointStar(
+            center = bigCenter,
+            outerRadius = bigR,
+            rotationRad = (-PI / 2.0).toFloat(),
             color = color
         )
+
+        val smallGridCoords = listOf(
+            10f to 2f,
+            12f to 4f,
+            12f to 7f,
+            10f to 9f
+        )
+        val smallR = 1f * unitR
+        smallGridCoords.forEach { (gx, gy) ->
+            val sc = Offset(gx * unitX, gy * unitY + waveOffsetY(gx))
+            val angleToBig = atan2(bigCenter.y - sc.y, bigCenter.x - sc.x)
+            drawFivePointStar(
+                center = sc,
+                outerRadius = smallR,
+                rotationRad = angleToBig,
+                color = color
+            )
+        }
+    } else {
+        // Compact 5-star emblem around [center] for loading banners/buttons.
+        val bob = (sin(timeMs * 0.003) * outerRadius * 0.06).toFloat()
+        val bigCenter = Offset(center.x - outerRadius * 0.35f, center.y + bob)
+        val bigR = outerRadius * 0.68f
+        drawFivePointStar(
+            center = bigCenter,
+            outerRadius = bigR,
+            rotationRad = (-PI / 2.0).toFloat(),
+            color = color
+        )
+
+        val smallOffsets = listOf(
+            0.42f to -0.68f,
+            0.78f to -0.26f,
+            0.78f to 0.26f,
+            0.42f to 0.68f
+        )
+        val smallR = outerRadius * 0.24f
+        smallOffsets.forEachIndexed { idx, (dx, dy) ->
+            val localWave = (sin(timeMs * 0.003 + (idx + 1) * 0.6) * outerRadius * 0.05).toFloat()
+            val sc = Offset(center.x + dx * outerRadius, center.y + dy * outerRadius + localWave)
+            val angleToBig = atan2(bigCenter.y - sc.y, bigCenter.x - sc.x)
+            drawFivePointStar(
+                center = sc,
+                outerRadius = smallR,
+                rotationRad = angleToBig,
+                color = color
+            )
+        }
     }
 }
 
 /**
- * Ashoka-style wheel: rim, hub, 24 tapered spokes with tip beads —
- * closer to the national emblem than plain radial lines.
+ * Compatibility entry point used by loading banners/buttons: renders the Chinese 5-star emblem.
  */
-internal fun DrawScope.drawAshokaChakra(
+internal fun DrawScope.drawSpinningAshokaChakra(
     center: Offset,
     outerRadius: Float,
+    timeMs: Double,
+    color: Color = ChinaStarGold,
+) {
+    drawChinaFiveStars(
+        timeMs = timeMs,
+        fullFlagLayout = false,
+        center = center,
+        outerRadius = outerRadius,
+        color = color
+    )
+}
+
+internal fun DrawScope.drawFivePointStar(
+    center: Offset,
+    outerRadius: Float,
+    rotationRad: Float,
     color: Color
 ) {
-    val rimStroke = (outerRadius * 0.095f).coerceAtLeast(1.1f)
-    val rimOuter = outerRadius
-    val rimInner = outerRadius * 0.88f
-    val hubR = outerRadius * 0.13f
-    val spokeRoot = hubR * 1.15f
-    val spokeTip = rimInner * 0.96f
-    val halfAngle = (PI / 24.0 * 0.22).toFloat()
-
-    drawCircle(
-        color = color,
-        radius = rimOuter,
-        center = center,
-        style = Stroke(width = rimStroke, cap = StrokeCap.Round)
-    )
-    drawCircle(
-        color = color.copy(alpha = 0.85f),
-        radius = rimInner,
-        center = center,
-        style = Stroke(width = rimStroke * 0.45f)
-    )
-
-    for (i in 0 until 24) {
-        val a = (i * (2.0 * PI / 24.0)).toFloat()
-        val left = a - halfAngle
-        val right = a + halfAngle
-        val tipLeft = a - halfAngle * 0.55f
-        val tipRight = a + halfAngle * 0.55f
-
-        val path = Path().apply {
-            moveTo(
-                center.x + cos(left) * spokeRoot,
-                center.y + sin(left) * spokeRoot
-            )
-            lineTo(
-                center.x + cos(tipLeft) * spokeTip,
-                center.y + sin(tipLeft) * spokeTip
-            )
-            lineTo(
-                center.x + cos(a) * (spokeTip + rimStroke * 0.35f),
-                center.y + sin(a) * (spokeTip + rimStroke * 0.35f)
-            )
-            lineTo(
-                center.x + cos(tipRight) * spokeTip,
-                center.y + sin(tipRight) * spokeTip
-            )
-            lineTo(
-                center.x + cos(right) * spokeRoot,
-                center.y + sin(right) * spokeRoot
-            )
-            close()
+    // Official regular pentagram inner-to-outer radius ratio: sin(18°) / sin(54°) ≈ 0.381966
+    val innerRadius = outerRadius * 0.381966f
+    val path = Path().apply {
+        for (i in 0 until 10) {
+            val r = if (i % 2 == 0) outerRadius else innerRadius
+            val angle = rotationRad + i * (PI / 5.0).toFloat()
+            val px = center.x + cos(angle) * r
+            val py = center.y + sin(angle) * r
+            if (i == 0) moveTo(px, py) else lineTo(px, py)
         }
-        drawPath(path, color = color, style = Fill)
-
-        val bead = Offset(
-            center.x + cos(a) * ((rimInner + rimOuter) * 0.5f),
-            center.y + sin(a) * ((rimInner + rimOuter) * 0.5f)
-        )
-        drawCircle(
-            color = color,
-            radius = rimStroke * 0.55f,
-            center = bead
-        )
+        close()
     }
-
-    drawCircle(color = color, radius = hubR, center = center)
-    drawCircle(
-        color = color,
-        radius = hubR * 0.42f,
-        center = center,
-        style = Stroke(width = rimStroke * 0.35f, join = StrokeJoin.Round)
-    )
+    drawPath(path = path, color = color, style = Fill)
 }
 
 /** Shift a base RGB toward a nearby hue while keeping saturation soft. */
 internal fun flowingBandColor(base: Color, hueShiftDeg: Float, lightness: Float): Color {
     val (h, s, l) = rgbToHsl(base.red, base.green, base.blue)
     val nh = (h + hueShiftDeg / 360f).mod(1f)
-    val ns = (s * 0.92f).coerceIn(0f, 1f)
+    val ns = (s * 0.96f).coerceIn(0f, 1f)
     val nl = (l * lightness).coerceIn(0.15f, 0.97f)
     val (r, g, b) = hslToRgb(nh, ns, nl)
     return Color(r, g, b, base.alpha)

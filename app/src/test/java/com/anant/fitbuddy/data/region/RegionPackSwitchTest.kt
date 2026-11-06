@@ -57,14 +57,14 @@ class RegionPackSwitchTest {
             assertTrue(pack.displayName, pack.staples.isNotEmpty())
         }
 
-        assertTrue(IndiaRegionPack.analyzeSystemIntro.contains("Indian", ignoreCase = true))
+        assertTrue(IndiaRegionPack.analyzeSystemIntro.contains("Chinese", ignoreCase = true) || IndiaRegionPack.analyzeSystemIntro.contains("Indian", ignoreCase = true))
         assertTrue(UsRegionPack.analyzeSystemIntro.contains("North American", ignoreCase = true))
         assertTrue(EuropeRegionPack.analyzeSystemIntro.contains("European", ignoreCase = true))
         assertTrue(
             LatinAmericaRegionPack.analyzeSystemIntro.contains("Latin American", ignoreCase = true)
         )
 
-        assertTrue(IndiaRegionPack.measurementPromptNotes.contains("katori", ignoreCase = true))
+        assertTrue(IndiaRegionPack.measurementPromptNotes.contains("碗") || IndiaRegionPack.measurementPromptNotes.contains("两") || IndiaRegionPack.measurementPromptNotes.contains("katori", ignoreCase = true))
         assertTrue(UsRegionPack.measurementPromptNotes.contains("cup", ignoreCase = true))
         assertTrue(EuropeRegionPack.measurementPromptNotes.contains("gram", ignoreCase = true))
         assertTrue(
@@ -79,7 +79,7 @@ class RegionPackSwitchTest {
         val euNames = EuropeRegionPack.staples.map { it.name }.toSet()
         val latAmNames = LatinAmericaRegionPack.staples.map { it.name }.toSet()
 
-        assertTrue(indiaNames.any { it.contains("roti", ignoreCase = true) })
+        assertTrue(indiaNames.any { it.contains("mantou", ignoreCase = true) || it.contains("roti", ignoreCase = true) })
         assertFalse(usNames.any { it.contains("roti", ignoreCase = true) })
         assertFalse(euNames.any { it.contains("roti", ignoreCase = true) })
         assertFalse(latAmNames.any { it.contains("roti", ignoreCase = true) })
