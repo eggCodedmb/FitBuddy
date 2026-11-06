@@ -3,9 +3,9 @@ package com.anant.fitbuddy.data.region
 import com.anant.fitbuddy.data.prompts.PromptCatalog
 
 /** China region pack: Chinese home cooking, cafeteria/takeout staples, and portion language. */
-object IndiaRegionPack : RegionPack {
+object ChinaRegionPack : RegionPack {
 
-    override val region: AppRegion = AppRegion.INDIA
+    override val region: AppRegion = AppRegion.CHINA
     override val displayName: String = "China"
 
     val RICE_BOWL = RegionalDish(
@@ -122,3 +122,6 @@ object IndiaRegionPack : RegionPack {
 
     override val barcodeExample: String = "6901234567890"
 }
+
+@Deprecated("Use ChinaRegionPack instead", ReplaceWith("ChinaRegionPack"))
+typealias IndiaRegionPack = ChinaRegionPack

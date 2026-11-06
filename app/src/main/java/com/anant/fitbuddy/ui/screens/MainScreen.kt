@@ -149,7 +149,7 @@ fun MainScreen(
     val monthlyEndDate by viewModel.monthlyEndDate.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val regionPack = remember(settings.region) {
-        RegionPacks.packOrIndia(AppRegion.fromStored(settings.region))
+        RegionPacks.packOrChina(AppRegion.fromStored(settings.region))
     }
     val hasSettingsSnapshot by viewModel.hasSettingsSnapshot.collectAsStateWithLifecycle()
     val modelsState by viewModel.models.collectAsStateWithLifecycle()
@@ -559,6 +559,8 @@ fun MainScreen(
                 },
                 onRegenerateSupportId = viewModel::regenerateSupportId,
                 onChangeCloudPassword = viewModel::changeCloudPassword,
+                onTestWebDav = viewModel::testWebDavConnection,
+                onSaveWebDavSettings = viewModel::saveWebDavSettings,
                 modifier = Modifier.padding(innerPadding)
             )
         }

@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.anant.fitbuddy.BuildConfig
+import com.anant.fitbuddy.data.backup.webdav.WebDavConfig
 import com.anant.fitbuddy.data.model.WorkoutFilterOrdering
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -195,6 +196,10 @@ class SettingsRepository(context: Context) {
             mongoLastUploadAt = prefs[KEY_MONGO_LAST_UPLOAD_AT] ?: 0L,
             mongoLastUploadOk = prefs[KEY_MONGO_LAST_UPLOAD_OK] ?: false,
             mongoLastError = prefs[KEY_MONGO_LAST_ERROR].orEmpty(),
+            webDavUrl = prefs[KEY_WEBDAV_URL]?.ifBlank { null } ?: WebDavConfig.defaultUrl,
+            webDavUser = prefs[KEY_WEBDAV_USER] ?: WebDavConfig.defaultUser,
+            webDavPassword = prefs[KEY_WEBDAV_PASSWORD] ?: WebDavConfig.defaultPassword,
+            webDavDirectory = prefs[KEY_WEBDAV_DIR]?.ifBlank { null } ?: WebDavConfig.defaultDirectory,
             lastSuccessfulBackupAt = prefs[KEY_LAST_SUCCESSFUL_BACKUP_AT] ?: 0L,
             firstName = prefs[KEY_FIRST_NAME].orEmpty(),
             lastName = prefs[KEY_LAST_NAME].orEmpty()
@@ -498,6 +503,11 @@ class SettingsRepository(context: Context) {
             }
             prefs[KEY_FIRST_NAME] = settings.firstName.trim()
             prefs[KEY_LAST_NAME] = settings.lastName.trim()
+            prefs[KEY_WEBDAV_URL] = settings.webDavUrl.trim().ifBlank { WebDavConfig.defaultUrl }
+            prefs[KEY_WEBDAV_USER] = settings.webDavUser.trim()
+            prefs[KEY_WEBDAV_PASSWORD] = settings.webDavPassword
+            prefs[KEY_WEBDAV_DIR] = settings.webDavDirectory.trim().trim('/')
+                .ifBlank { WebDavConfig.defaultDirectory }
             // Save resets Auto "active" lines to the preferred models (platform change,
             // Local↔Cloud, dropdown edits). Also clear those models' rate-limit cooldowns
             // so Auto actually tries the selection the green lines now promise — otherwise
@@ -788,6 +798,10 @@ class SettingsRepository(context: Context) {
         val KEY_CLOUD_BACKUP_PW_BLOB = stringPreferencesKey("cloud_backup_pw_blob")
         val KEY_MONGO_DB_NAME = stringPreferencesKey("mongo_db_name")
         val KEY_MONGO_COLLECTION = stringPreferencesKey("mongo_collection_name")
+        val KEY_WEBDAV_URL = stringPreferencesKey("webdav_url")
+        val KEY_WEBDAV_USER = stringPreferencesKey("webdav_user")
+        val KEY_WEBDAV_PASSWORD = stringPreferencesKey("webdav_password")
+        val KEY_WEBDAV_DIR = stringPreferencesKey("webdav_dir")
         val KEY_MONGO_LAST_UPLOAD_AT = longPreferencesKey("mongo_last_upload_at")
         val KEY_MONGO_LAST_UPLOAD_OK = booleanPreferencesKey("mongo_last_upload_ok")
         val KEY_MONGO_LAST_ERROR = stringPreferencesKey("mongo_last_error")

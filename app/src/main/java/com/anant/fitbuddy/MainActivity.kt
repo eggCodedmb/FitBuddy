@@ -21,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.anant.fitbuddy.crash.CrashReporter
 import com.anant.fitbuddy.data.backup.mongo.MongoUriVault
+import com.anant.fitbuddy.data.backup.webdav.WebDavConfig
 import com.anant.fitbuddy.data.region.RegionDetector
 import com.anant.fitbuddy.data.remote.oauth.OpenRouterOAuth
 import com.anant.fitbuddy.data.settings.AppSettings
@@ -119,7 +120,7 @@ class MainActivity : ComponentActivity() {
                                 supportId = settings.supportId,
                                 regionRequestAlreadySent = settings.regionRequestSentAt > 0L,
                                 onRegionRequestSent = viewModel::markRegionRequestSent,
-                                cloudRestoreAvailable = MongoUriVault.isAvailable(),
+                                cloudRestoreAvailable = WebDavConfig.hasBuiltInAccount() || settings.isWebDavConfigured,
                                 openRouterOAuthBusy = openRouterOAuthBusy,
                                 openRouterOAuthKey = settings.openRouterOAuthKey,
                                 userMessage = analysisState.userMessage,
@@ -145,7 +146,7 @@ class MainActivity : ComponentActivity() {
                             val showCloudStep =
                                 !BuildConfig.DEBUG &&
                                     BuildConfig.IS_FDROID &&
-                                    MongoUriVault.isAvailable()
+                                    (WebDavConfig.hasBuiltInAccount() || settings.isWebDavConfigured)
                             val buildDefaultsCrashOff = !AppSettings().crashReportingEnabled
                             val needsCrashStep =
                                 buildDefaultsCrashOff && !settings.crashReportingEnabled

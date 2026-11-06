@@ -63,25 +63,25 @@ class RegionDetectorTest {
     }
 
     @Test
-    fun `defaults to India when nothing matches`() {
+    fun `defaults to China when nothing matches`() {
         val region = RegionDetector.detect(
             localeCountry = "IN",
             simCountry = null,
             networkCountry = null,
             timeZoneId = "Asia/Kolkata"
         )
-        assertEquals(AppRegion.INDIA, region)
+        assertEquals(AppRegion.CHINA, region)
     }
 
     @Test
-    fun `unrelated country and time zone still defaults to India`() {
+    fun `unrelated country and time zone still defaults to China`() {
         val region = RegionDetector.detect(
             localeCountry = "JP",
             simCountry = null,
             networkCountry = null,
             timeZoneId = "Asia/Tokyo"
         )
-        assertEquals(AppRegion.INDIA, region)
+        assertEquals(AppRegion.CHINA, region)
     }
 
     @Test
@@ -152,7 +152,7 @@ class RegionDetectorTest {
     }
 
     @Test
-    fun `member country codes cover NA Europe LatAm and not India`() {
+    fun `member country codes cover NA Europe LatAm and not China`() {
         assertEquals(listOf("CA", "US"), RegionDetector.memberCountryCodes(AppRegion.US))
         assertTrue(
             RegionDetector.memberCountryCodes(AppRegion.EUROPE).containsAll(listOf("DE", "FR", "GB"))
@@ -161,9 +161,9 @@ class RegionDetectorTest {
             RegionDetector.memberCountryCodes(AppRegion.LATIN_AMERICA)
                 .containsAll(listOf("MX", "CL", "UY", "BR"))
         )
-        assertTrue(RegionDetector.memberCountryCodes(AppRegion.INDIA).isEmpty())
+        assertTrue(RegionDetector.memberCountryCodes(AppRegion.CHINA).isEmpty())
         assertTrue(AppRegion.US.cyclesMemberFlags())
-        assertFalse(AppRegion.INDIA.cyclesMemberFlags())
+        assertFalse(AppRegion.CHINA.cyclesMemberFlags())
     }
 
     @Test

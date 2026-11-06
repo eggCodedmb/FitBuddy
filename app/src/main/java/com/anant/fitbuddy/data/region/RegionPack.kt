@@ -62,11 +62,14 @@ $lines
 
 object RegionPacks {
     fun pack(region: AppRegion): RegionPack = when (region) {
-        AppRegion.INDIA -> IndiaRegionPack
+        AppRegion.CHINA -> ChinaRegionPack
         AppRegion.US -> UsRegionPack
         AppRegion.EUROPE -> EuropeRegionPack
         AppRegion.LATIN_AMERICA -> LatinAmericaRegionPack
     }
 
-    fun packOrIndia(region: AppRegion?): RegionPack = pack(region ?: AppRegion.INDIA)
+    fun packOrChina(region: AppRegion?): RegionPack = pack(region ?: AppRegion.CHINA)
+
+    @Deprecated("Use packOrChina instead", ReplaceWith("packOrChina(region)"))
+    fun packOrIndia(region: AppRegion?): RegionPack = packOrChina(region)
 }

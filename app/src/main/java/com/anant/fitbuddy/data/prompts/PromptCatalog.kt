@@ -17,8 +17,13 @@ object PromptCatalog {
 
     fun load(path: String): String =
         cache.getOrPut(path) {
-            val stream = PromptCatalog::class.java.classLoader
-                ?.getResourceAsStream(path)
+            val classLoader = PromptCatalog::class.java.classLoader
+            val stream = classLoader?.getResourceAsStream(path)
+                ?: (if (path.startsWith("prompts/region/india/")) {
+                    classLoader?.getResourceAsStream(
+                        path.replace("prompts/region/india/", "prompts/region/china/")
+                    )
+                } else null)
                 ?: error("Missing prompt resource: $path")
             stream.bufferedReader(Charsets.UTF_8).use { it.readText() }.trim()
         }

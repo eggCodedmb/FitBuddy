@@ -60,22 +60,22 @@ class PromptCatalogTest {
 
     @Test
     fun renderedAnalyzeAndTarget_includeRegionMarkers() {
-        val india = RegionPacks.pack(AppRegion.INDIA)
+        val china = RegionPacks.pack(AppRegion.CHINA)
         val us = RegionPacks.pack(AppRegion.US)
         val europe = RegionPacks.pack(AppRegion.EUROPE)
         val latAm = RegionPacks.pack(AppRegion.LATIN_AMERICA)
 
-        val indiaAnalyze = PromptCatalog.analyzePrompt(
+        val chinaAnalyze = PromptCatalog.analyzePrompt(
             userStateContextJson = "{}",
             userText = "dal chawal",
             hasImage = false,
             forceEstimate = false,
             strictClarification = false,
-            pack = india
+            pack = china
         )
-        assertTrue(indiaAnalyze.contains("Chinese", ignoreCase = true) || indiaAnalyze.contains("Indian", ignoreCase = true))
-        assertTrue(indiaAnalyze.contains("dal chawal"))
-        assertFalse(indiaAnalyze.contains("{{"))
+        assertTrue(chinaAnalyze.contains("Chinese", ignoreCase = true) || chinaAnalyze.contains("Indian", ignoreCase = true))
+        assertTrue(chinaAnalyze.contains("dal chawal"))
+        assertFalse(chinaAnalyze.contains("{{"))
 
         val usTarget = PromptCatalog.targetPrompt("{}", us)
         assertTrue(usTarget.contains("North American", ignoreCase = true))
@@ -90,7 +90,7 @@ class PromptCatalogTest {
 
     @Test
     fun askPortionUserPrompt_rendersDishAndNotes() {
-        val pack = RegionPacks.pack(AppRegion.INDIA)
+        val pack = RegionPacks.pack(AppRegion.CHINA)
         val prompt = PromptCatalog.askPortionUserPrompt("Paneer bhurji", pack.askPortionPromptNotes)
         assertTrue(prompt.startsWith("Paneer bhurji."))
         assertTrue(prompt.contains("碗") || prompt.contains("两") || prompt.contains("katori", ignoreCase = true))

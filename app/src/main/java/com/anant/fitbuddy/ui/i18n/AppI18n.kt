@@ -38,7 +38,8 @@ object AppI18n {
         AppLanguage.EN -> AppLanguage.EN
         AppLanguage.SYSTEM -> {
             val lang = deviceLocale.language.lowercase(Locale.ROOT)
-            if (lang.startsWith("zh")) AppLanguage.ZH_CN else AppLanguage.EN
+            val country = deviceLocale.country.lowercase(Locale.ROOT)
+            if (lang.startsWith("zh") || country == "cn") AppLanguage.ZH_CN else AppLanguage.EN
         }
     }
 

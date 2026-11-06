@@ -59,6 +59,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import com.anant.fitbuddy.data.backup.webdav.WebDavConfig
+import com.anant.fitbuddy.data.backup.webdav.WebDavCredentials
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -236,6 +240,8 @@ fun SettingsScreen(
     onMongoDownload: (supportId: String) -> Unit = {},
     onChangeCloudPassword: (CharArray?) -> Unit = {},
     onRegenerateSupportId: () -> Unit = {},
+    onSaveWebDavSettings: (url: String, user: String, password: String, directory: String) -> Unit = { _, _, _, _ -> },
+    onTestWebDav: (WebDavCredentials, (Boolean, String?) -> Unit) -> Unit = { _, _ -> },
     /** Settings-only: ♥ double-tap side effect (crash reporting on). */
     onHeartDoubleTapHeartbeat: () -> Unit = {},
     /** Themes section unlock — true when this install's Support ID is on the donors list. */
@@ -308,9 +314,14 @@ fun SettingsScreen(
     var showCloudBackupEnableConfirm by remember { mutableStateOf(false) }
     var showChangeCloudPasswordDialog by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
-    val cloudVaultAvailable = remember {
-        com.anant.fitbuddy.data.backup.mongo.MongoUriVault.isAvailable()
-    }
+    var webDavUrlDraft by remember(settings.webDavUrl) { mutableStateOf(settings.webDavUrl) }
+    var webDavUserDraft by remember(settings.webDavUser) { mutableStateOf(settings.webDavUser) }
+    var webDavPasswordDraft by remember(settings.webDavPassword) { mutableStateOf(settings.webDavPassword) }
+    var webDavDirectoryDraft by remember(settings.webDavDirectory) { mutableStateOf(settings.webDavDirectory) }
+    var webDavTesting by remember { mutableStateOf(false) }
+    var webDavTestResult by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
+    var showWebDavPassword by remember { mutableStateOf(false) }
+    val cloudVaultAvailable = true
 
     val needsNotificationPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     val notificationPermission = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS) { granted ->
@@ -1257,7 +1268,7 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            val currentRegion = AppRegion.fromStored(settings.region) ?: AppRegion.INDIA
+            val currentRegion = AppRegion.fromStored(settings.region) ?: AppRegion.CHINA
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 AppRegion.entries.forEachIndexed { index, region ->
                     SegmentedButton(
@@ -1365,118 +1376,198 @@ fun SettingsScreen(
             }
 
             Text(
-                text = "Cloud",
+                text = "Jianguoyun (WebDAV) Cloud Backup",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 4.dp)
             )
-            if (!cloudVaultAvailable) {
-                Text(
-                    text = "Cloud backup is not available in this build.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else if (BuildConfig.DEBUG) {
-                Text(
-                    text = "Cloud backup uploads are disabled in debug builds. You can still " +
-                        "pull an existing backup during onboarding with a Support ID. " +
-                        "Use a release build to enable uploads.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                SettingToggleRow(
-                    title = "Enable cloud backup",
-                    checked = false,
-                    onCheckedChange = {},
-                    enabled = false,
-                    hintTitle = "Enable cloud backup",
-                    hint = "Unavailable in debug builds."
-                )
-                SettingToggleRow(
-                    title = "Auto-upload on startup",
-                    checked = false,
-                    onCheckedChange = {},
-                    enabled = false,
-                    hintTitle = "Auto-upload",
-                    hint = "Unavailable in debug builds."
-                )
-                Text(
-                    text = "Cloud backup off (debug)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                OutlinedButton(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = false
-                ) {
-                    Text("Upload now")
+            Text(
+                text = "Use Jianguoyun or any standard WebDAV cloud storage to backup and restore encrypted data.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            OutlinedTextField(
+                value = webDavUrlDraft,
+                onValueChange = {
+                    webDavUrlDraft = it
+                    webDavTestResult = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("WebDAV Server URL") },
+                singleLine = true,
+                placeholder = { Text(WebDavConfig.JIANGUOYUN_URL) }
+            )
+            OutlinedTextField(
+                value = webDavUserDraft,
+                onValueChange = {
+                    webDavUserDraft = it
+                    webDavTestResult = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("WebDAV Account / Email") },
+                singleLine = true,
+                placeholder = { Text("example@domain.com") }
+            )
+            OutlinedTextField(
+                value = webDavPasswordDraft,
+                onValueChange = {
+                    webDavPasswordDraft = it
+                    webDavTestResult = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("WebDAV App Password") },
+                singleLine = true,
+                visualTransformation = if (showWebDavPassword) {
+                    androidx.compose.ui.text.input.VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    IconButton(onClick = { showWebDavPassword = !showWebDavPassword }) {
+                        Icon(
+                            imageVector = if (showWebDavPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            contentDescription = if (showWebDavPassword) "Hide password" else "Show password"
+                        )
+                    }
+                },
+                supportingText = {
+                    Text("For Jianguoyun, generate an App Password in Account Settings → Security Settings → App Passwords.")
                 }
+            )
+            OutlinedTextField(
+                value = webDavDirectoryDraft,
+                onValueChange = {
+                    webDavDirectoryDraft = it
+                    webDavTestResult = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Backup Directory") },
+                singleLine = true,
+                placeholder = { Text(WebDavConfig.DEFAULT_DIRECTORY) }
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 OutlinedButton(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = false
-                ) {
-                    Text("Change cloud backup password")
-                }
-            } else {
-                SettingToggleRow(
-                    title = "Enable cloud backup",
-                    checked = settings.cloudBackupEnabled,
-                    onCheckedChange = { enabled ->
-                        if (enabled) {
-                            onPrepareCloudBackupEnable()
-                            showCloudBackupEnableConfirm = true
-                        } else {
-                            onCloudBackupEnabledChange(false)
+                    onClick = {
+                        webDavTesting = true
+                        webDavTestResult = null
+                        val creds = WebDavCredentials(
+                            url = webDavUrlDraft.trim(),
+                            user = webDavUserDraft.trim(),
+                            password = webDavPasswordDraft,
+                            directory = webDavDirectoryDraft.trim().trim('/')
+                        )
+                        onTestWebDav(creds) { success, err ->
+                            webDavTesting = false
+                            webDavTestResult = success to (err ?: "Connection successful!")
                         }
                     },
-                    hintTitle = "Enable cloud backup",
-                    hint = "When on, you can upload manually or automatically after you log a " +
-                        "meal or workout. Uploads use your Support ID as the cloud document key. " +
-                        "Also turns on crash reports (turning crash reports off disables cloud backup)."
-                )
-                SettingToggleRow(
-                    title = "Auto-upload on startup",
-                    checked = settings.cloudAutoUploadEnabled,
-                    onCheckedChange = onCloudAutoUploadChange,
-                    enabled = settings.cloudBackupEnabled,
-                    hintTitle = "Auto-upload",
-                    hint = "When enabled, FitBuddy uploads on app start if the last upload was " +
-                        "more than 12 hours ago. Manual Upload now always runs immediately."
-                )
-                val statusText = when {
-                    !settings.cloudBackupEnabled -> "Cloud backup off"
-                    settings.mongoLastUploadAt <= 0L -> "Enabled — no upload yet"
-                    settings.mongoLastUploadOk ->
-                        "Last upload OK · ${formatMongoUploadTime(settings.mongoLastUploadAt)}"
-                    else ->
-                        "Last upload failed · ${formatMongoUploadTime(settings.mongoLastUploadAt)}" +
-                            settings.mongoLastError.takeIf { it.isNotBlank() }?.let { "\n$it" }
-                                .orEmpty()
+                    modifier = Modifier.weight(1f),
+                    enabled = !webDavTesting && webDavUrlDraft.isNotBlank() && webDavUserDraft.isNotBlank() && webDavPasswordDraft.isNotBlank()
+                ) {
+                    if (webDavTesting) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.size(8.dp))
+                        Text("Testing...")
+                    } else {
+                        Text("Test Connection")
+                    }
                 }
+                androidx.compose.material3.Button(
+                    onClick = {
+                        onSaveWebDavSettings(
+                            webDavUrlDraft,
+                            webDavUserDraft,
+                            webDavPasswordDraft,
+                            webDavDirectoryDraft
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Save")
+                }
+            }
+
+            webDavTestResult?.let { (success, msg) ->
                 Text(
-                    text = statusText,
+                    text = msg,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
-                if (mongoBackupBusy) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
-                OutlinedButton(
-                    onClick = onMongoUpload,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = settings.cloudBackupEnabled && !mongoBackupBusy
-                ) {
-                    Text("Upload now")
-                }
-                OutlinedButton(
-                    onClick = { showChangeCloudPasswordDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = settings.cloudBackupEnabled && !mongoBackupBusy
-                ) {
-                    Text("Change cloud backup password")
-                }
+            }
+
+            Spacer(Modifier.size(4.dp))
+
+            SettingToggleRow(
+                title = "Enable cloud backup",
+                checked = settings.cloudBackupEnabled,
+                onCheckedChange = { enabled ->
+                    if (enabled) {
+                        onPrepareCloudBackupEnable()
+                        showCloudBackupEnableConfirm = true
+                    } else {
+                        onCloudBackupEnabledChange(false)
+                    }
+                },
+                hintTitle = "Enable cloud backup",
+                hint = "When on, you can upload manually or automatically after you log a " +
+                    "meal or workout. Uploads use your Support ID as the cloud document key. " +
+                    "Also turns on crash reports (turning crash reports off disables cloud backup)."
+            )
+            SettingToggleRow(
+                title = "Auto-upload on startup",
+                checked = settings.cloudAutoUploadEnabled,
+                onCheckedChange = onCloudAutoUploadChange,
+                enabled = settings.cloudBackupEnabled,
+                hintTitle = "Auto-upload",
+                hint = "When enabled, FitBuddy uploads on app start if the last upload was " +
+                    "more than 12 hours ago. Manual Upload now always runs immediately."
+            )
+            val statusText = when {
+                !settings.cloudBackupEnabled -> "Cloud backup off"
+                settings.mongoLastUploadAt <= 0L -> "Enabled — no upload yet"
+                settings.mongoLastUploadOk ->
+                    "Last upload OK · ${formatMongoUploadTime(settings.mongoLastUploadAt)}"
+                else ->
+                    "Last upload failed · ${formatMongoUploadTime(settings.mongoLastUploadAt)}" +
+                        settings.mongoLastError.takeIf { it.isNotBlank() }?.let { "\n$it" }
+                            .orEmpty()
+            }
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (mongoBackupBusy) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+            OutlinedButton(
+                onClick = onMongoUpload,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = settings.cloudBackupEnabled && settings.isWebDavConfigured && !mongoBackupBusy
+            ) {
+                Text("Upload now")
+            }
+            OutlinedButton(
+                onClick = {
+                    mongoRestoreSupportIdDraft = settings.supportId
+                    showMongoRestoreConfirm = true
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = settings.isWebDavConfigured && !mongoBackupBusy
+            ) {
+                Text("Restore from cloud")
+            }
+            OutlinedButton(
+                onClick = { showChangeCloudPasswordDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = settings.cloudBackupEnabled && !mongoBackupBusy
+            ) {
+                Text("Change cloud backup password")
             }
         }
 
@@ -1741,54 +1832,9 @@ fun SettingsScreen(
                 }
 
                 DeveloperSection(
-                    title = "Cloud (Atlas)",
-                    description = "Device-local db/collection overrides. Defaults: " +
-                        "${AppSettings.DEFAULT_MONGO_DB_NAME} / " +
-                        AppSettings.DEFAULT_MONGO_COLLECTION
+                    title = "Cloud backup (WebDAV)",
+                    description = "Tools for testing cloud chunk rollover and restoring by Support ID."
                 ) {
-                    var mongoDbNameDraft by remember(settings.mongoDbName) {
-                        mutableStateOf(
-                            settings.mongoDbName.ifBlank { AppSettings.DEFAULT_MONGO_DB_NAME }
-                        )
-                    }
-                    var mongoCollectionDraft by remember(settings.mongoCollectionName) {
-                        mutableStateOf(
-                            settings.mongoCollectionName.ifBlank {
-                                AppSettings.DEFAULT_MONGO_COLLECTION
-                            }
-                        )
-                    }
-                    OutlinedTextField(
-                        value = mongoDbNameDraft,
-                        onValueChange = { mongoDbNameDraft = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Database name") },
-                        singleLine = true,
-                        placeholder = { Text(AppSettings.DEFAULT_MONGO_DB_NAME) }
-                    )
-                    OutlinedTextField(
-                        value = mongoCollectionDraft,
-                        onValueChange = { mongoCollectionDraft = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Collection name") },
-                        singleLine = true,
-                        placeholder = { Text(AppSettings.DEFAULT_MONGO_COLLECTION) }
-                    )
-                    OutlinedButton(
-                        onClick = {
-                            onSaveQuiet(
-                                settings.copy(
-                                    mongoDbName = mongoDbNameDraft.trim()
-                                        .ifBlank { AppSettings.DEFAULT_MONGO_DB_NAME },
-                                    mongoCollectionName = mongoCollectionDraft.trim()
-                                        .ifBlank { AppSettings.DEFAULT_MONGO_COLLECTION }
-                                )
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Save Atlas db / collection")
-                    }
                     if (mongoBackupBusy) {
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
@@ -1798,25 +1844,14 @@ fun SettingsScreen(
                             showMongoRestoreConfirm = true
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !BuildConfig.DEBUG &&
-                            cloudVaultAvailable &&
-                            !mongoBackupBusy
+                        enabled = settings.isWebDavConfigured && !mongoBackupBusy
                     ) {
                         Text("Download & restore from cloud")
-                    }
-                    if (BuildConfig.DEBUG) {
-                        Text(
-                            text = "Debug builds restore from cloud only during onboarding " +
-                                "(Support ID). Uploads stay off.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                     OutlinedButton(
                         onClick = onForceNewCloudChunk,
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !BuildConfig.DEBUG &&
-                            cloudVaultAvailable &&
+                        enabled = settings.isWebDavConfigured &&
                             settings.cloudBackupEnabled &&
                             !mongoBackupBusy
                     ) {

@@ -66,7 +66,7 @@ progress charts, editable meal review, and reusable food presets.
     (`cdn.jsdelivr.net/gh/anantdark/exercisedb-api@main/...`), disk-caches JSON for offline.
   - `dto/` — `ChatDtos.kt`, `ModelsDtos.kt` (OpenRouter `ModelDto` + Gemini `GeminiModelDto`).
 - `data/prompts/` — `PromptCatalog.kt` loads LLM templates from
-  `app/src/main/resources/prompts/` (`shared/` shells + `region/{india,us,europe,latin_america}/`
+  `app/src/main/resources/prompts/` (`shared/` shells + `region/{china,us,europe,latin_america}/`
   overlays). Edit those `.txt` files to change prompts; do not re-embed prompt bodies in
   `RemoteAiDataSource` or `*RegionPack`.
 - `data/region/` — `AppRegion`, `RegionPack` / `*RegionPack` (staples + UI hints; prompt overlays

@@ -30,11 +30,11 @@ object RegionDetector {
 
     /**
      * ISO 3166-1 alpha-2 codes covered by [region], sorted by English display name.
-     * Empty for India (single-country pack with its own Tiranga draw).
+     * Empty for China (single-country pack with its own flag draw).
      */
     fun memberCountryCodes(region: AppRegion): List<String> {
         val codes = when (region) {
-            AppRegion.INDIA -> emptySet()
+            AppRegion.CHINA -> emptySet()
             AppRegion.US -> NORTH_AMERICA_COUNTRIES
             AppRegion.EUROPE -> EUROPEAN_COUNTRIES
             AppRegion.LATIN_AMERICA -> LATIN_AMERICA_COUNTRIES
@@ -101,7 +101,7 @@ object RegionDetector {
         if (tz.startsWith("Europe/")) return AppRegion.EUROPE
         if (isLatinAmericaTimeZone(tz)) return AppRegion.LATIN_AMERICA
 
-        return AppRegion.INDIA
+        return AppRegion.CHINA
     }
 
     private fun isNorthAmericaTimeZone(tz: String): Boolean =

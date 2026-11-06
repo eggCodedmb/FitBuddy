@@ -12,6 +12,7 @@ import com.anant.fitbuddy.BuildConfig
 import com.anant.fitbuddy.MainActivity
 import com.anant.fitbuddy.data.backup.BackupErrorMessages
 import com.anant.fitbuddy.data.backup.BackupImportResult
+import com.anant.fitbuddy.data.backup.webdav.WebDavCredentials
 import com.anant.fitbuddy.data.database.BodyMeasurement
 import com.anant.fitbuddy.data.database.ExerciseDailySummary
 import com.anant.fitbuddy.data.database.ExerciseLog
@@ -1129,7 +1130,7 @@ class MainViewModel(
         _regionSelectionSaving.value = true
         viewModelScope.launch {
             val current = settings.value
-            val cloudOn = (cloudBackupEnabled ?: current.cloudBackupEnabled) && !BuildConfig.DEBUG
+            val cloudOn = cloudBackupEnabled ?: current.cloudBackupEnabled
             val reporting = (crashReportingEnabled ?: current.crashReportingEnabled) || cloudOn
             if (cloudOn) {
                 settingsRepository.ensureSupportId()
@@ -2596,12 +2597,6 @@ class MainViewModel(
     val mongoBackupBusy: StateFlow<Boolean> = _mongoBackupBusy.asStateFlow()
 
     fun uploadMongoBackup() {
-        if (BuildConfig.DEBUG) {
-            _analysisState.update {
-                it.copy(userMessage = "Cloud backup uploads are disabled in debug builds")
-            }
-            return
-        }
         viewModelScope.launch {
             _mongoBackupBusy.value = true
             runCatching { repository.uploadMongoBackup(force = true) }
@@ -2628,12 +2623,6 @@ class MainViewModel(
 
     /** Developer tools: freeze current tip log rows and append a new cloud tip chunk. */
     fun forceNewCloudBackupChunk() {
-        if (BuildConfig.DEBUG) {
-            _analysisState.update {
-                it.copy(userMessage = "Cloud backup uploads are disabled in debug builds")
-            }
-            return
-        }
         viewModelScope.launch {
             _mongoBackupBusy.value = true
             runCatching { repository.uploadMongoBackup(force = true, forceNewChunk = true) }
@@ -2670,15 +2659,6 @@ class MainViewModel(
         supportId: String,
         passwordProvider: suspend () -> CharArray? = { null }
     ) {
-        if (BuildConfig.DEBUG) {
-            _analysisState.update {
-                it.copy(
-                    userMessage = "In debug builds, restore from cloud only during onboarding " +
-                        "(enter a Support ID)."
-                )
-            }
-            return
-        }
         viewModelScope.launch {
             _mongoBackupBusy.value = true
             val enteredId = supportId.trim()
@@ -2686,11 +2666,10 @@ class MainViewModel(
                 val count = repository.downloadMongoBackup(enteredId, passwordProvider)
                 val restored = settingsRepository.settings.first()
                 val reusedId = restored.supportId.trim().ifBlank { enteredId }
-                val cloudOn = !BuildConfig.DEBUG
+                val cloudOn = true
                 settingsRepository.save(
                     restored.copy(
                         supportId = reusedId,
-                        // Debug builds never opt into cloud upload after restore.
                         cloudBackupEnabled = cloudOn,
                         crashReportingEnabled = if (cloudOn) true else restored.crashReportingEnabled
                     )
@@ -2715,13 +2694,6 @@ class MainViewModel(
     }
 
     fun changeCloudPassword(newPassword: CharArray?) {
-        if (BuildConfig.DEBUG) {
-            newPassword?.fill('\u0000')
-            _analysisState.update {
-                it.copy(userMessage = "Cloud backup uploads are disabled in debug builds")
-            }
-            return
-        }
         viewModelScope.launch {
             _mongoBackupBusy.value = true
             val isBlank = newPassword == null || newPassword.isEmpty() ||
@@ -2753,12 +2725,6 @@ class MainViewModel(
     }
 
     fun setCloudBackupEnabled(enabled: Boolean) {
-        if (BuildConfig.DEBUG && enabled) {
-            _analysisState.update {
-                it.copy(userMessage = "Cloud backup is disabled in debug builds")
-            }
-            return
-        }
         viewModelScope.launch {
             if (enabled) {
                 settingsRepository.ensureSupportId()
@@ -2791,13 +2757,6 @@ class MainViewModel(
      * failure the toggle stays enabled and a retry runs on the next auto-upload.
      */
     fun enableCloudBackup(password: CharArray?) {
-        if (BuildConfig.DEBUG) {
-            password?.fill('\u0000')
-            _analysisState.update {
-                it.copy(userMessage = "Cloud backup is disabled in debug builds")
-            }
-            return
-        }
         viewModelScope.launch {
             _mongoBackupBusy.value = true
             val isBlank = password == null || password.isEmpty() || password.all { it.isWhitespace() }
@@ -2841,6 +2800,42 @@ class MainViewModel(
         }
     }
 
+    fun testWebDavConnection(
+        credentials: WebDavCredentials,
+        onResult: (Boolean, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            runCatching {
+                repository.testWebDavConnection(credentials)
+            }.onSuccess {
+                onResult(true, null)
+            }.onFailure { e ->
+                onResult(false, e.message ?: e.javaClass.simpleName)
+            }
+        }
+    }
+
+    fun saveWebDavSettings(
+        url: String,
+        user: String,
+        password: String,
+        directory: String
+    ) {
+        viewModelScope.launch {
+            settingsRepository.update {
+                it.copy(
+                    webDavUrl = url.trim(),
+                    webDavUser = user.trim(),
+                    webDavPassword = password,
+                    webDavDirectory = directory.trim().trim('/')
+                )
+            }
+            _analysisState.update {
+                it.copy(userMessage = "WebDAV settings saved")
+            }
+        }
+    }
+
     /** Guest path: ensure a Support ID exists before the AI/profile steps. */
     fun startGuestOnboarding() {
         if (_forceFullOnboarding.value) return // preview — do not mint / touch Support ID
@@ -2872,11 +2867,10 @@ class MainViewModel(
                 val restored = settingsRepository.settings.first()
                 // Prefer Support ID from restored settings; fall back to the ID used to fetch.
                 val reusedId = restored.supportId.trim().ifBlank { enteredId }
-                val cloudOn = !BuildConfig.DEBUG
+                val cloudOn = true
                 settingsRepository.save(
                     restored.copy(
                         supportId = reusedId,
-                        // Debug builds never opt into cloud upload after restore.
                         cloudBackupEnabled = cloudOn,
                         cloudAutoUploadEnabled = cloudOn,
                         crashReportingEnabled = if (cloudOn) true else restored.crashReportingEnabled
@@ -3345,7 +3339,7 @@ class MainViewModel(
     fun askForPortion(dishName: String) {
         val name = dishName.trim()
         if (name.isBlank()) return
-        val pack = com.anant.fitbuddy.data.region.RegionPacks.packOrIndia(
+        val pack = com.anant.fitbuddy.data.region.RegionPacks.packOrChina(
             com.anant.fitbuddy.data.region.AppRegion.fromStored(settings.value.region)
         )
         val prompt = com.anant.fitbuddy.data.prompts.PromptCatalog.askPortionUserPrompt(
@@ -3603,7 +3597,7 @@ class MainViewModel(
                 require(heightCm in 100.0..250.0) { "Enter a valid height between 100 and 250 cm" }
                 require(weightKg in 25.0..400.0) { "Enter a valid weight between 25 and 400 kg" }
                 val current = settings.value
-                val cloudOn = cloudBackupEnabled && !BuildConfig.DEBUG
+                val cloudOn = cloudBackupEnabled
                 // Cloud backup implies crash reporting.
                 val crashOn = crashReportingEnabled || cloudOn
                 if (cloudOn) {

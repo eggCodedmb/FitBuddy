@@ -444,6 +444,50 @@ object ZhCnTranslations {
         put("Total weight (g)", "总重量 (g)")
         put("Change this to scale every ingredient's weight (and macros) proportionally.", "修改总重量将按比例缩放所有配料的重量与营养素。")
         put("Know the dish but not grams? Estimates a standard home serving.", "知道菜名但不知道克数？可让 AI 估算标准家常份量。")
+        put(
+            "Know the dish but not grams? Estimates a standard Chinese home serving (bowls, liang, pieces).",
+            "知道菜名但不知道克数？可让 AI 估算中国家庭标准份量（碗、两、个等）。"
+        )
+        put(
+            "Know the dish but not grams? Estimates a standard North American home/restaurant serving (cups, ounces, slices).",
+            "知道菜名但不知道克数？可让 AI 估算北美家庭/餐厅标准份量（杯、盎司、片等）。"
+        )
+        put(
+            "Know the dish but not grams? Estimates a standard US home/restaurant serving (cups, ounces, slices).",
+            "知道菜名但不知道克数？可让 AI 估算美国家庭/餐厅标准份量（杯、盎司、片等）。"
+        )
+        put(
+            "Know the dish but not grams? Estimates a standard European home serving (grams, millilitres, pieces).",
+            "知道菜名但不知道克数？可让 AI 估算欧洲家庭标准份量（克、毫升、块/片等）。"
+        )
+        put(
+            "Know the dish but not grams? Estimates a standard LatAm home/street serving (piezas, tazas, platos).",
+            "知道菜名但不知道克数？可让 AI 估算拉美家庭/街头饮食标准份量（份、杯、盘等）。"
+        )
+        put(
+            "Know the dish but not grams? Estimates a standard home serving (roti counts, katori volumes).",
+            "知道菜名但不知道克数？可让 AI 估算标准家常份量（如面饼数量、小碗容量等）。"
+        )
+        put(
+            "e.g. \"1 bowl of rice with tomato scrambled eggs\" or \"beef noodles\"",
+            "例如：“1 碗米饭配西红柿炒鸡蛋”或“牛肉面”"
+        )
+        put(
+            "e.g. \"cheeseburger with fries\" or \"2 scrambled eggs and toast\"",
+            "例如：“芝士汉堡配薯条”或“2 个煎蛋配吐司”"
+        )
+        put(
+            "e.g. \"pasta with tomato sauce\" or \"2 slices of bread with cheese\"",
+            "例如：“番茄意面”或“2 片面包配奶酪”"
+        )
+        put(
+            "e.g. \"2 tacos al pastor\" or \"arroz con pollo with beans\"",
+            "例如：“2 个墨西哥烤肉塔可”或“鸡肉饭配豆子”"
+        )
+        put(
+            "e.g. \"2 rotis with dal tadka\" or \"aloo paratha with curd\"",
+            "例如：“2 张全麦饼配黄油豆汤”或“土豆馅饼配酸奶”"
+        )
         put("Build a Meal", "组合一餐")
         put("Dish Name", "食物名称")
         put("Dish name", "食物名称")
@@ -603,10 +647,18 @@ object ZhCnTranslations {
         put("Off", "关闭")
 
         put("Preferences", "偏好设置")
+        put("Region", "饮食区域")
+        put("region", "饮食区域")
+        put("Diet region", "饮食习惯区域")
+        put("Food region", "饮食区域")
+        put("China", "中国")
         put("India", "印度")
+        put("North America", "北美")
         put("North America (US & Canada)", "北美（美国与加拿大）")
         put("Europe", "欧洲")
         put("Latin America", "拉丁美洲")
+        put("N.Am", "北美")
+        put("LatAm", "拉美")
         put("Day rollover hour", "日期切换时间（跨天小时）")
         put("Day change hour", "跨天时间")
         put("Midnight (12:00 AM)", "午夜 (00:00)")
@@ -704,15 +756,52 @@ object ZhCnTranslations {
         put("Mostly seated with little planned exercise", "大部分时间久坐，极少有规划运动")
         put("Light", "轻度活动")
         put("Mostly seated plus light exercise about 1–3 days/week", "大部分时间久坐，每周约 1-3 天轻度运动")
+        put("Mostly seated plus light exercise about 1-3 days/week", "大部分时间久坐，每周约 1-3 天轻度运动")
         put("Moderate", "中度活动")
         put("Moderate exercise about 3–5 days/week or an active routine", "每周约 3-5 天中度运动或日常较活跃")
+        put("Moderate exercise about 3-5 days/week or an active routine", "每周约 3-5 天中度运动或日常较活跃")
         put("Active", "高度活跃")
         put("Hard exercise about 6–7 days/week or a physical job", "每周约 6-7 天高强度运动或从事体力工作")
+        put("Hard exercise about 6-7 days/week or a physical job", "每周约 6-7 天高强度运动或从事体力工作")
         put("Very Active", "极高强度活动")
         put("Very active", "极高强度活动")
         put("A strenuous job plus hard training or frequent two-a-days", "重体力工作且配合高强度训练，或频繁一日双练")
         put("Typical overall activity", "日常总体活动量")
-        put(". Include workouts, daily movement, and physical work.", "。包含日常锻炼、走动与体力劳动。")
+        put(". Include workouts, daily movement, and physical work.", "。包含日常锻炼、日常走动与体力劳动。")
+        put("Include workouts, daily movement, and physical work.", "包含日常锻炼、日常走动与体力劳动。")
+        put("Include workouts, daily movement, and physical work", "包含日常锻炼、日常走动与体力劳动")
+        put(
+            "1.2× resting needs · Mostly seated with little planned exercise. Include workouts, daily movement, and physical work.",
+            "1.2× 基础代谢 · 大部分时间久坐，极少有规划运动。包含日常锻炼、日常走动与体力劳动。"
+        )
+        put(
+            "1.375× resting needs · Mostly seated plus light exercise about 1–3 days/week. Include workouts, daily movement, and physical work.",
+            "1.375× 基础代谢 · 大部分时间久坐，每周约 1-3 天轻度运动。包含日常锻炼、日常走动与体力劳动。"
+        )
+        put(
+            "1.375× resting needs · Mostly seated plus light exercise about 1-3 days/week. Include workouts, daily movement, and physical work.",
+            "1.375× 基础代谢 · 大部分时间久坐，每周约 1-3 天轻度运动。包含日常锻炼、日常走动与体力劳动。"
+        )
+        put(
+            "1.55× resting needs · Moderate exercise about 3–5 days/week or an active routine. Include workouts, daily movement, and physical work.",
+            "1.55× 基础代谢 · 每周约 3-5 天中度运动或日常较活跃。包含日常锻炼、日常走动与体力劳动。"
+        )
+        put(
+            "1.55× resting needs · Moderate exercise about 3-5 days/week or an active routine. Include workouts, daily movement, and physical work.",
+            "1.55× 基础代谢 · 每周约 3-5 天中度运动或日常较活跃。包含日常锻炼、日常走动与体力劳动。"
+        )
+        put(
+            "1.725× resting needs · Hard exercise about 6–7 days/week or a physical job. Include workouts, daily movement, and physical work.",
+            "1.725× 基础代谢 · 每周约 6-7 天高强度运动或从事体力工作。包含日常锻炼、日常走动与体力劳动。"
+        )
+        put(
+            "1.725× resting needs · Hard exercise about 6-7 days/week or a physical job. Include workouts, daily movement, and physical work.",
+            "1.725× 基础代谢 · 每周约 6-7 天高强度运动或从事体力工作。包含日常锻炼、日常走动与体力劳动。"
+        )
+        put(
+            "1.9× resting needs · A strenuous job plus hard training or frequent two-a-days. Include workouts, daily movement, and physical work.",
+            "1.9× 基础代谢 · 重体力工作且配合高强度训练，或频繁一日双练。包含日常锻炼、日常走动与体力劳动。"
+        )
         put("Activity used", "采用的活动量")
         put("Activity recommendation", "活动量建议")
         put("Apply activity level", "应用活动量等级")
@@ -779,7 +868,12 @@ object ZhCnTranslations {
         put("Calculate personalized targets", "计算个性化健康目标")
         put("Targets and safe trend adjustments are calculated on device; AI may choose between those exact options and personalize the explanation.", "健康目标与安全趋势调整全部在设备本地完成计算；AI 仅会在安全方案中选择并提供个性化说明。")
         put("Targets and safe trend adjustments are calculated on device — no AI connection required.", "健康目标与安全趋势调整全部在设备本地完成计算 — 无需连接 AI。")
-        put("How these were calculated", "计算依据与原理")
+        put("How these were calculated", "科学依据与原理")
+        put("计算依据与原理", "科学依据与原理")
+        put("Automated calorie and weight targets are available only for adults 18+. For children and teens, ask a qualified health professional.", "自动热量与体重目标仅适用于 18 岁及以上成年人。儿童与青少年请咨询专业医护人员。")
+        put("Enter an age between 18 and 120", "请输入 18 至 120 之间的年龄")
+        put("Enter a valid height between 100 and 250 cm", "请输入 100 至 250 厘米之间的有效身高")
+        put("Enter a valid weight between 25 and 400 kg", "请输入 25 至 400 公斤之间的有效体重")
         put("AI coaching note", "AI 指导建议")
         put("Workout logs may not include physical work, daily movement, or unlogged exercise.", "运动记录可能未涵盖体力工作、日常走动或未登记的日常活动。")
 
@@ -899,6 +993,24 @@ object ZhCnTranslations {
         put("(generating…)", "(正在生成…)")
         put("Local backups", "本地备份")
         put("Share a JSON backup (Drive, Files, email, etc.).", "分享或导出 JSON 备份（网盘、文件、邮件等）。")
+        put("Jianguoyun (WebDAV) Cloud Backup", "坚果云 (WebDAV) 云端备份")
+        put("Use Jianguoyun or any standard WebDAV cloud storage to backup and restore encrypted data.", "使用坚果云或任何标准 WebDAV 网盘备份和恢复端到端加密的健康数据。")
+        put("WebDAV Server URL", "WebDAV 服务器地址")
+        put("WebDAV Account / Email", "WebDAV 账号 / 邮箱")
+        put("WebDAV App Password", "WebDAV 应用密码")
+        put("Backup Directory", "备份目录")
+        put("For Jianguoyun, generate an App Password in Account Settings → Security Settings → App Passwords.", "坚果云用户请在 官网账户信息 → 安全设置 → 应用密码 中生成专用的应用密码。")
+        put("Test Connection", "测试连接")
+        put("Testing...", "正在测试连接…")
+        put("Connection successful!", "连接成功！")
+        put("WebDAV settings saved", "WebDAV 设置已保存")
+        put("Restore from cloud", "从云端恢复")
+        put("Download & restore from cloud", "从云端下载并恢复")
+        put("Cloud backup (WebDAV)", "云端备份 (WebDAV)")
+        put("Tools for testing cloud chunk rollover and restoring by Support ID.", "用于测试云端分卷轮转及通过支持 ID 恢复数据的调试工具。")
+        put("Hide password", "隐藏密码")
+        put("Show password", "显示密码")
+        put("WebDAV account is not configured (Settings → Backup)", "WebDAV 账号未配置（请前往 设置 → 数据备份 进行配置）")
         put("Cloud backup is not available in this build.", "当前编译版本不支持云端备份。")
         put("Cloud backup uploads are disabled in debug builds. You can still pull an existing backup during onboarding with a Support ID. Use a release build to enable uploads.", "调试版本已禁用云端备份上传功能。你仍可在新手引导中使用支持 ID 拉取已有备份。上传需使用正式版构建。")
         put("Enable cloud backup", "启用云端备份")
@@ -1520,6 +1632,59 @@ object ZhCnTranslations {
     private val fieldRequiredRangeRegex = Regex("""^(.+) is required \((.+)\)$""")
     private val mustBeBetweenRegex = Regex("""^Must be between (.+) and (.+)$""")
     private val restingFactorDescRegex = Regex("""^([0-9.]+×) resting needs · (.+)$""")
+    private val mifflinEnergyRegex = Regex(
+        """Mifflin[–-]St Jeor estimates about ([0-9,]+)\s*kcal at rest and ([0-9,]+)\s*kcal/day including your selected activity level\.(?:\s*Because sex was not set, the midpoint of the two Mifflin[–-]St Jeor constants was used\.)?""",
+        RegexOption.IGNORE_CASE
+    )
+    private val loseWeightTargetRegex = Regex(
+        """A moderate 15% deficit gives a starting target of ([0-9,]+)\s*kcal/day\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val gainMuscleTargetRegex = Regex(
+        """A conservative 8% surplus gives a starting target of ([0-9,]+)\s*kcal/day\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val maintainTargetRegex = Regex(
+        """Estimated maintenance gives a starting target of ([0-9,]+)\s*kcal/day\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val savedTargetsStableRegex = Regex(
+        """Your saved targets are already close to the calculated starting point, so they were kept stable\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val macroTargetRegex = Regex(
+        """Protein is set near ([0-9.]+)\s*g/kg of body weight \(([0-9,]+)\s*g\), with fat near 25% of energy and carbohydrates filling the remainder within adult ranges\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val milestoneLoseWeightRegex = Regex(
+        """The ([0-9.]+)\s*kg target is an initial milestone of up to 5%, not an ideal weight\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val milestoneMaintainRegex = Regex(
+        """Current weight is retained as a maintenance milestone unless you set a different one\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val trendAdjustedRegex = Regex(
+        """Trend-adjusted locally with a cautious (increased|reduced) calorie step from consistent body and nutrition history; reassess after another two to four weeks\.""",
+        RegexOption.IGNORE_CASE
+    )
+    private val workoutMatchesSelectedRegex = Regex(
+        """^The workout-based suggestion matches your selected (.+) level\.$"""
+    )
+    private val boundedTrendAdjustmentRegex = Regex(
+        """^A ([+-]?\d+)\s*kcal/day bounded trend adjustment was applied\.$"""
+    )
+    private val foodLogsPreviousDaysRegex = Regex(
+        """^Food logs:\s*(\d+)\s*of the previous\s*(\d+)\s*completed days\.\s*Composition readings are supporting evidence and can vary with hydration\.$"""
+    )
+    private val macroSummaryRowRegex = Regex(
+        """^Protein\s+(\d+)\s*g\s*·\s*Carbs\s+(\d+)\s*g\s*·\s*Fats\s+(\d+)\s*g$""",
+        RegexOption.IGNORE_CASE
+    )
+    private val kcalPerDayRegex = Regex(
+        """^(\d+)\s*kcal/day$""",
+        RegexOption.IGNORE_CASE
+    )
     private val recognizingNameRegex = Regex("""^Recognising "(.+)"…$""")
     private val addCustomNameRegex = Regex("""^Add custom "(.+)"$""")
     private val viewExerciseNameRegex = Regex("""^View (.+)$""")
@@ -1794,8 +1959,25 @@ object ZhCnTranslations {
             return "数值必须在 ${m.groupValues[1]} 至 ${m.groupValues[2]} 之间"
         }
         restingFactorDescRegex.matchEntire(text)?.let { m ->
-            val desc = translate(m.groupValues[2])
-            return "${m.groupValues[1]} 基础代谢 · $desc"
+            val factor = m.groupValues[1]
+            var descText = m.groupValues[2]
+            val suffixPatterns = listOf(
+                ". Include workouts, daily movement, and physical work.",
+                ". Include workouts, daily movement, and physical work",
+                " Include workouts, daily movement, and physical work.",
+                " Include workouts, daily movement, and physical work"
+            )
+            var matchedSuffix = false
+            for (s in suffixPatterns) {
+                if (descText.endsWith(s)) {
+                    descText = descText.removeSuffix(s).trimEnd('.', ' ')
+                    matchedSuffix = true
+                    break
+                }
+            }
+            val desc = translate(descText)
+            val suffixCn = if (matchedSuffix) "。包含日常锻炼、日常走动与体力劳动。" else ""
+            return "$factor 基础代谢 · $desc$suffixCn"
         }
         recognizingNameRegex.matchEntire(text)?.let { m ->
             return "正在识别“${m.groupValues[1]}”…"
@@ -1815,6 +1997,34 @@ object ZhCnTranslations {
         deleteFoodNamedRegex.matchEntire(text)?.let { m ->
             return "删除 ${m.groupValues[1]}"
         }
+        workoutMatchesSelectedRegex.matchEntire(text)?.let { m ->
+            val act = translate(m.groupValues[1])
+            return "运动建议与你所选的「$act」活动量一致。"
+        }
+        boundedTrendAdjustmentRegex.matchEntire(text)?.let { m ->
+            return "已应用 ${m.groupValues[1]} kcal/天的趋势动态调整。"
+        }
+        foodLogsPreviousDaysRegex.matchEntire(text)?.let { m ->
+            return "饮食记录：过去 ${m.groupValues[2]} 天中记录了 ${m.groupValues[1]} 天。身体成分测量仅供参考，可能受饮水状态影响。"
+        }
+        macroSummaryRowRegex.matchEntire(text)?.let { m ->
+            return "蛋白质 ${m.groupValues[1]} g  ·  碳水 ${m.groupValues[2]} g  ·  脂肪 ${m.groupValues[3]} g"
+        }
+        kcalPerDayRegex.matchEntire(text)?.let { m ->
+            return "${m.groupValues[1]} kcal/天"
+        }
+        if (text.startsWith("Evidence-based", ignoreCase = true) ||
+            text.contains("Mifflin", ignoreCase = true) ||
+            text.contains("deficit gives a starting target", ignoreCase = true) ||
+            text.contains("surplus gives a starting target", ignoreCase = true) ||
+            text.contains("Estimated maintenance gives a starting target", ignoreCase = true) ||
+            text.contains("Protein is set near", ignoreCase = true) ||
+            text.contains("target is an initial milestone", ignoreCase = true) ||
+            text.contains("Trend-adjusted locally with a cautious", ignoreCase = true)
+        ) {
+            val translated = translateHealthRationale(text)
+            if (translated != text) return translated
+        }
         if (text.startsWith("Export failed: ")) {
             return "导出失败：${text.removePrefix("Export failed: ")}"
         }
@@ -1824,6 +2034,59 @@ object ZhCnTranslations {
         if (text.startsWith("Cloud upload failed: ")) {
             return "云端上传失败：${text.removePrefix("Cloud upload failed: ")}"
         }
+        if (text.startsWith("Know the dish but not grams?")) {
+            return "知道菜名但不知道克数？可让 AI 估算标准家常份量。"
+        }
         return text
+    }
+
+    private fun translateHealthRationale(text: String): String {
+        var result = text
+        result = result.replace(Regex("""^Evidence-based v3:\s*""", RegexOption.IGNORE_CASE), "科学依据 v3：")
+        result = result.replace(Regex("""^Evidence-based:\s*""", RegexOption.IGNORE_CASE), "科学依据：")
+
+        result = mifflinEnergyRegex.replace(result) { m ->
+            val resting = m.groupValues[1]
+            val maint = m.groupValues[2]
+            val hasSexNote = m.value.contains("Because sex was not set", ignoreCase = true)
+            val sexNoteCn = if (hasSexNote) "因未设置生理性别，计算采用了两性常数的中位数。" else ""
+            "Mifflin-St Jeor 公式估算你的静息代谢约为 $resting 千卡，结合所选日常活动量，每日维持热量约为 $maint 千卡。$sexNoteCn".trim()
+        }
+
+        result = loseWeightTargetRegex.replace(result) { m ->
+            "按 15% 的适度热量缺口，起始目标定为 ${m.groupValues[1]} 千卡/天。"
+        }
+        result = gainMuscleTargetRegex.replace(result) { m ->
+            "按 8% 的温和热量盈余，起始目标定为 ${m.groupValues[1]} 千卡/天。"
+        }
+        result = maintainTargetRegex.replace(result) { m ->
+            "按估算的维持热量，起始目标定为 ${m.groupValues[1]} 千卡/天。"
+        }
+        result = savedTargetsStableRegex.replace(result) {
+            "你当前保存的目标与计算出的基准值非常接近，因此保持不变。"
+        }
+
+        result = macroTargetRegex.replace(result) { m ->
+            "蛋白质摄入设定为约 ${m.groupValues[1]} 克/公斤体重（${m.groupValues[2]} 克），脂肪约占总能量的 25%，碳水化合物在健康推荐范围内补充剩余热量。"
+        }
+
+        result = milestoneLoseWeightRegex.replace(result) { m ->
+            "${m.groupValues[1]} 公斤目标为初步的阶段性里程碑（最多 5% 减重），并非最终理想体重。"
+        }
+        result = milestoneMaintainRegex.replace(result) {
+            "当前体重作为维持目标的阶段性里程碑，你也可以自行调整。"
+        }
+
+        result = trendAdjustedRegex.replace(result) { m ->
+            val direction = if (m.groupValues[1].equals("increased", ignoreCase = true)) "小幅上调" else "小幅下调"
+            "根据连续的体重和饮食记录在本地进行了谨慎的${direction}热量微调；建议在 2 至 4 周后重新评估。"
+        }
+
+        result = result.replace(Regex("""Coaching note:\s*""", RegexOption.IGNORE_CASE), "AI 指导建议：")
+
+        result = result.replace(Regex("""。\s+"""), "。")
+        result = result.replace(Regex("""：\s+"""), "：")
+        result = result.replace(Regex("""\s{2,}"""), " ").trim()
+        return result
     }
 }

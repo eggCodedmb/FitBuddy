@@ -17,19 +17,20 @@ class RegionPackSwitchTest {
 
     @Test
     fun packLookup_mapsEachStoredRegionToDistinctPack() {
-        assertEquals(IndiaRegionPack, RegionPacks.pack(AppRegion.INDIA))
+        assertEquals(ChinaRegionPack, RegionPacks.pack(AppRegion.CHINA))
         assertEquals(UsRegionPack, RegionPacks.pack(AppRegion.US))
         assertEquals(EuropeRegionPack, RegionPacks.pack(AppRegion.EUROPE))
         assertEquals(LatinAmericaRegionPack, RegionPacks.pack(AppRegion.LATIN_AMERICA))
 
-        assertEquals(IndiaRegionPack, packForStored("INDIA"))
+        assertEquals(ChinaRegionPack, packForStored("CHINA"))
+        assertEquals(ChinaRegionPack, packForStored("INDIA")) // legacy alias
         assertEquals(UsRegionPack, packForStored("US"))
         assertEquals(EuropeRegionPack, packForStored("europe")) // case-insensitive
         assertEquals(LatinAmericaRegionPack, packForStored("latin_america"))
-        // Unset / invalid → India fallback (same as RemoteAiDataSource.regionPack)
-        assertEquals(IndiaRegionPack, packForStored(""))
-        assertEquals(IndiaRegionPack, packForStored(null))
-        assertEquals(IndiaRegionPack, packForStored("ATLANTIS"))
+        // Unset / invalid → China fallback (same as RemoteAiDataSource.regionPack)
+        assertEquals(ChinaRegionPack, packForStored(""))
+        assertEquals(ChinaRegionPack, packForStored(null))
+        assertEquals(ChinaRegionPack, packForStored("ATLANTIS"))
     }
 
     @Test
@@ -57,14 +58,14 @@ class RegionPackSwitchTest {
             assertTrue(pack.displayName, pack.staples.isNotEmpty())
         }
 
-        assertTrue(IndiaRegionPack.analyzeSystemIntro.contains("Chinese", ignoreCase = true) || IndiaRegionPack.analyzeSystemIntro.contains("Indian", ignoreCase = true))
+        assertTrue(ChinaRegionPack.analyzeSystemIntro.contains("Chinese", ignoreCase = true) || ChinaRegionPack.analyzeSystemIntro.contains("Indian", ignoreCase = true))
         assertTrue(UsRegionPack.analyzeSystemIntro.contains("North American", ignoreCase = true))
         assertTrue(EuropeRegionPack.analyzeSystemIntro.contains("European", ignoreCase = true))
         assertTrue(
             LatinAmericaRegionPack.analyzeSystemIntro.contains("Latin American", ignoreCase = true)
         )
 
-        assertTrue(IndiaRegionPack.measurementPromptNotes.contains("碗") || IndiaRegionPack.measurementPromptNotes.contains("两") || IndiaRegionPack.measurementPromptNotes.contains("katori", ignoreCase = true))
+        assertTrue(ChinaRegionPack.measurementPromptNotes.contains("碗") || ChinaRegionPack.measurementPromptNotes.contains("两") || ChinaRegionPack.measurementPromptNotes.contains("katori", ignoreCase = true))
         assertTrue(UsRegionPack.measurementPromptNotes.contains("cup", ignoreCase = true))
         assertTrue(EuropeRegionPack.measurementPromptNotes.contains("gram", ignoreCase = true))
         assertTrue(
@@ -74,30 +75,30 @@ class RegionPackSwitchTest {
 
     @Test
     fun packs_doNotShareStapleInventories() {
-        val indiaNames = IndiaRegionPack.staples.map { it.name }.toSet()
+        val chinaNames = ChinaRegionPack.staples.map { it.name }.toSet()
         val usNames = UsRegionPack.staples.map { it.name }.toSet()
         val euNames = EuropeRegionPack.staples.map { it.name }.toSet()
         val latAmNames = LatinAmericaRegionPack.staples.map { it.name }.toSet()
 
-        assertTrue(indiaNames.any { it.contains("mantou", ignoreCase = true) || it.contains("roti", ignoreCase = true) })
+        assertTrue(chinaNames.any { it.contains("mantou", ignoreCase = true) || it.contains("roti", ignoreCase = true) })
         assertFalse(usNames.any { it.contains("roti", ignoreCase = true) })
         assertFalse(euNames.any { it.contains("roti", ignoreCase = true) })
         assertFalse(latAmNames.any { it.contains("roti", ignoreCase = true) })
 
         assertTrue(usNames.any { it.contains("burger", ignoreCase = true) })
-        assertFalse(indiaNames.any { it.contains("burger", ignoreCase = true) })
+        assertFalse(chinaNames.any { it.contains("burger", ignoreCase = true) })
 
         assertTrue(euNames.any { it.contains("croissant", ignoreCase = true) })
-        assertFalse(indiaNames.any { it.contains("croissant", ignoreCase = true) })
+        assertFalse(chinaNames.any { it.contains("croissant", ignoreCase = true) })
 
         assertTrue(latAmNames.any { it.contains("taco", ignoreCase = true) })
-        assertFalse(indiaNames.any { it.contains("taco", ignoreCase = true) })
+        assertFalse(chinaNames.any { it.contains("taco", ignoreCase = true) })
         assertFalse(euNames.any { it.contains("taco", ignoreCase = true) })
     }
 
     @Test
     fun switchingStoredRegion_changesResolvedHintsAndStaples() {
-        val before = packForStored("INDIA")
+        val before = packForStored("CHINA")
         val after = packForStored("US")
 
         assertNotEquals(before.foodLogHint, after.foodLogHint)
@@ -115,7 +116,7 @@ class RegionPackSwitchTest {
         // Mirrors FitnessRepository.simulateFromRegionPack keyword routing.
         assertEquals(UsRegionPack.BURGER, stapleHit("cheeseburger with fries", AppRegion.US))
         assertEquals(EuropeRegionPack.CROISSANT, stapleHit("croissant", AppRegion.EUROPE))
-        assertEquals(IndiaRegionPack.ROTI, stapleHit("2 rotis with dal", AppRegion.INDIA))
+        assertEquals(ChinaRegionPack.ROTI, stapleHit("2 rotis with dal", AppRegion.CHINA))
         assertEquals(LatinAmericaRegionPack.TACO, stapleHit("2 tacos al pastor", AppRegion.LATIN_AMERICA))
 
         // Same word resolves from the active pack — no global merge.
@@ -125,9 +126,9 @@ class RegionPackSwitchTest {
         assertEquals(EuropeRegionPack.SALAD, euSalad)
         assertNotEquals(usSalad!!.calories, euSalad!!.calories)
 
-        // India staples must not win while US is active.
+        // China staples must not win while US is active.
         assertEquals(null, stapleHit("roti sabzi", AppRegion.US))
-        assertEquals(null, stapleHit("cheeseburger", AppRegion.INDIA))
+        assertEquals(null, stapleHit("cheeseburger", AppRegion.CHINA))
         assertEquals(null, stapleHit("croissant", AppRegion.LATIN_AMERICA))
     }
 
@@ -139,7 +140,7 @@ class RegionPackSwitchTest {
     }
 
     private fun packForStored(value: String?): RegionPack =
-        RegionPacks.packOrIndia(AppRegion.fromStored(value))
+        RegionPacks.packOrChina(AppRegion.fromStored(value))
 
     private fun assertDistinct(values: List<String>) {
         assertEquals("expected distinct values, got $values", values.size, values.toSet().size)

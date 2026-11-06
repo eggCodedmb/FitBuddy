@@ -778,5 +778,5 @@ class RemoteAiDataSource(
     }
 
     private fun regionPack(settings: AppSettings): RegionPack =
-        RegionPacks.packOrIndia(AppRegion.fromStored(settings.region))
+        RegionPacks.packOrChina(AppRegion.fromStored(settings.region))
 }

@@ -18,8 +18,8 @@ import com.anant.fitbuddy.data.backup.FrozenBackupIndexJson
 import com.anant.fitbuddy.data.backup.crypto.BackupFormat
 import com.anant.fitbuddy.data.backup.crypto.BackupPasswordStore
 import com.anant.fitbuddy.data.backup.crypto.OpenResult
-import com.anant.fitbuddy.data.backup.mongo.MongoBackupRepository
-import com.anant.fitbuddy.data.backup.mongo.MongoUriVault
+import com.anant.fitbuddy.data.backup.webdav.WebDavBackupRepository
+import com.anant.fitbuddy.data.backup.webdav.WebDavCredentials
 import com.anant.fitbuddy.data.remote.NetworkModule
 import com.anant.fitbuddy.data.database.BodyMeasurement
 import com.anant.fitbuddy.data.database.BodyMeasurementDao
@@ -67,7 +67,7 @@ import com.anant.fitbuddy.data.model.FoodEntryDraft
 import com.anant.fitbuddy.data.model.FoodDraft
 import com.anant.fitbuddy.data.model.MealDraft
 import com.anant.fitbuddy.data.region.AppRegion
-import com.anant.fitbuddy.data.region.IndiaRegionPack
+import com.anant.fitbuddy.data.region.ChinaRegionPack
 import com.anant.fitbuddy.data.region.RegionPack
 import com.anant.fitbuddy.data.region.RegionPacks
 import com.anant.fitbuddy.data.region.RegionalDish
@@ -125,7 +125,10 @@ class FitnessRepository(
     private val openFoodFactsDataSource: OpenFoodFactsDataSource,
     private val settingsRepository: SettingsRepository,
     private val backupManager: BackupManager,
-    private val mongoBackupRepository: MongoBackupRepository = MongoBackupRepository()
+    /** Cloud backup transport: Jianguoyun / any WebDAV server (account from Settings → Backup). */
+    private val mongoBackupRepository: WebDavBackupRepository = WebDavBackupRepository(
+        credentialsProvider = { settingsRepository.settings.first().webDavCredentials() }
+    )
 ) {
     val activeProfile: Flow<UserProfile?> = userProfileDao.getProfile()
 
@@ -416,15 +419,12 @@ class FitnessRepository(
         force: Boolean = false,
         forceNewChunk: Boolean = false
     ): CloudUploadResult {
-        if (BuildConfig.DEBUG) {
-            error("Cloud backup uploads are disabled in debug builds")
-        }
         val settings = settingsRepository.settings.first()
         if (!settings.cloudBackupEnabled) {
             error("Cloud backup is disabled")
         }
-        if (!MongoUriVault.isAvailable()) {
-            error("Cloud backup is not available in this build")
+        if (!settings.isWebDavConfigured) {
+            error("WebDAV account is not configured (Settings → Backup)")
         }
         val supportId = settings.supportId.ifBlank { settingsRepository.ensureSupportId() }
         if (!BackupChunkIds.isValidSupportId(supportId)) {
@@ -489,8 +489,8 @@ class FitnessRepository(
                     val macId = DeviceIdentity.macId(backupManager.appContext)
 
                     mongoBackupRepository.uploadChunk(
-                        baseUrl = MongoUriVault.baseUrl(),
-                        apiKey = MongoUriVault.resolve(),
+                        baseUrl = "",
+                        apiKey = "",
                         databaseName = dbName,
                         collectionName = collName,
                         supportId = supportId,
@@ -505,8 +505,8 @@ class FitnessRepository(
                         headTipChunkId = newTipId
                     )
                     mongoBackupRepository.uploadChunk(
-                        baseUrl = MongoUriVault.baseUrl(),
-                        apiKey = MongoUriVault.resolve(),
+                        baseUrl = "",
+                        apiKey = "",
                         databaseName = dbName,
                         collectionName = collName,
                         supportId = supportId,
@@ -540,8 +540,8 @@ class FitnessRepository(
                     val tipId = frozen.tipChunkId.ifBlank { supportId }
                     val tipIndex = BackupChunkIds.parseChunkIndex(tipId, supportId) ?: 0
                     mongoBackupRepository.uploadChunk(
-                        baseUrl = MongoUriVault.baseUrl(),
-                        apiKey = MongoUriVault.resolve(),
+                        baseUrl = "",
+                        apiKey = "",
                         databaseName = settings.mongoDbName.ifBlank { AppSettings.DEFAULT_MONGO_DB_NAME },
                         collectionName = settings.mongoCollectionName.ifBlank {
                             AppSettings.DEFAULT_MONGO_COLLECTION
@@ -597,8 +597,8 @@ class FitnessRepository(
         supportId: String,
         passwordProvider: suspend () -> CharArray? = { null }
     ): Int {
-        if (!MongoUriVault.isAvailable()) {
-            error("Cloud backup is not available in this build")
+        if (!settingsRepository.settings.first().isWebDavConfigured) {
+            error("WebDAV account is not configured (Settings → Backup)")
         }
         val id = supportId.trim()
         if (id.isBlank()) {
@@ -608,8 +608,8 @@ class FitnessRepository(
         val dbName = settings.mongoDbName.ifBlank { AppSettings.DEFAULT_MONGO_DB_NAME }
         val collName = settings.mongoCollectionName.ifBlank { AppSettings.DEFAULT_MONGO_COLLECTION }
         val chain = mongoBackupRepository.downloadChain(
-            baseUrl = MongoUriVault.baseUrl(),
-            apiKey = MongoUriVault.resolve(),
+            baseUrl = "",
+            apiKey = "",
             databaseName = dbName,
             collectionName = collName,
             supportId = id
@@ -661,9 +661,7 @@ class FitnessRepository(
                 )
             )
             // Legacy single plaintext head: migrate to sealed Support-ID tip when possible.
-            // Debug builds never push — even this one-shot migration rewrite.
-            if (!BuildConfig.DEBUG &&
-                chain.size == 1 &&
+            if (chain.size == 1 &&
                 backupManager.crypto.classify(chain[0].payloadJson) == BackupFormat.LEGACY_PLAIN
             ) {
                 try {
@@ -674,8 +672,8 @@ class FitnessRepository(
                         passwordChars.fill('\u0000')
                     }
                     mongoBackupRepository.upload(
-                        baseUrl = MongoUriVault.baseUrl(),
-                        apiKey = MongoUriVault.resolve(),
+                        baseUrl = "",
+                        apiKey = "",
                         databaseName = dbName,
                         collectionName = collName,
                         supportId = id,
@@ -768,18 +766,15 @@ class FitnessRepository(
      * PUTs each node (tip-only rule does not apply).
      */
     suspend fun changeCloudPassword(newPassword: CharArray?) {
-        if (BuildConfig.DEBUG) {
-            error("Cloud backup uploads are disabled in debug builds")
-        }
         // Validate: non-blank password must be 8–128 characters
         val isBlank = newPassword == null || newPassword.isEmpty() || newPassword.all { it.isWhitespace() }
         if (!isBlank && (newPassword.size < 8 || newPassword.size > 128)) {
             throw IllegalArgumentException("Password must be 8–128 characters")
         }
-        if (!MongoUriVault.isAvailable()) {
-            error("Cloud backup is not available in this build")
-        }
         val settings = settingsRepository.settings.first()
+        if (!settings.isWebDavConfigured) {
+            error("WebDAV account is not configured (Settings → Backup)")
+        }
         val supportId = settings.supportId.ifBlank { settingsRepository.ensureSupportId() }
         val dbName = settings.mongoDbName.ifBlank { AppSettings.DEFAULT_MONGO_DB_NAME }
         val collName = settings.mongoCollectionName.ifBlank { AppSettings.DEFAULT_MONGO_COLLECTION }
@@ -789,8 +784,8 @@ class FitnessRepository(
         try {
             val chain = runCatching {
                 mongoBackupRepository.downloadChain(
-                    baseUrl = MongoUriVault.baseUrl(),
-                    apiKey = MongoUriVault.resolve(),
+                    baseUrl = "",
+                    apiKey = "",
                     databaseName = dbName,
                     collectionName = collName,
                     supportId = supportId
@@ -807,8 +802,8 @@ class FitnessRepository(
                     }
                     val resealed = backupManager.crypto.seal(plain, effectivePassword.copyOf())
                     mongoBackupRepository.uploadChunk(
-                        baseUrl = MongoUriVault.baseUrl(),
-                        apiKey = MongoUriVault.resolve(),
+                        baseUrl = "",
+                        apiKey = "",
                         databaseName = dbName,
                         collectionName = collName,
                         supportId = supportId,
@@ -829,8 +824,8 @@ class FitnessRepository(
                 val payloadJson = backupManager.encode(data)
                 val sealedPayload = backupManager.crypto.seal(payloadJson, effectivePassword.copyOf())
                 mongoBackupRepository.upload(
-                    baseUrl = MongoUriVault.baseUrl(),
-                    apiKey = MongoUriVault.resolve(),
+                    baseUrl = "",
+                    apiKey = "",
                     databaseName = dbName,
                     collectionName = collName,
                     supportId = supportId,
@@ -860,6 +855,18 @@ class FitnessRepository(
     }
 
     /**
+     * Checks a WebDAV account (Jianguoyun app password etc.) and creates the backup folder.
+     * Throws with a readable message on failure.
+     */
+    suspend fun testWebDavConnection(credentials: WebDavCredentials) {
+        WebDavBackupRepository(credentialsProvider = { credentials }).testConnection()
+    }
+
+    /** Newest Support ID that has a backup in the configured WebDAV folder, or null. */
+    suspend fun latestCloudSupportId(): String? =
+        runCatching { mongoBackupRepository.listSupportIds().firstOrNull() }.getOrNull()
+
+    /**
      * True when startup auto-upload should run: cloud + auto toggles on, vault present,
      * at least one food or workout log, and last upload older than
      * [AppSettings.CLOUD_AUTO_UPLOAD_DEBOUNCE_MS] (or never).
@@ -868,9 +875,8 @@ class FitnessRepository(
         settings: AppSettings,
         nowMs: Long = System.currentTimeMillis()
     ): Boolean {
-        if (BuildConfig.DEBUG) return false
         if (!settings.cloudBackupEnabled || !settings.cloudAutoUploadEnabled) return false
-        if (!MongoUriVault.isAvailable()) return false
+        if (!settings.isWebDavConfigured) return false
         if (settings.supportId.isBlank()) return false
         if (!hasFoodOrExerciseLogs()) return false
         val last = settings.mongoLastUploadAt
@@ -1292,7 +1298,7 @@ class FitnessRepository(
         }
 
         return try {
-            val region = AppRegion.fromStored(settings.region) ?: AppRegion.INDIA
+            val region = AppRegion.fromStored(settings.region) ?: AppRegion.CHINA
             val outcome = processResponse(
                 simulateAIService(userText, inferMode(userText, false), region),
                 customTimestamp = customTimestamp,
@@ -1978,16 +1984,16 @@ class FitnessRepository(
     fun simulateAIService(
         input: String,
         mode: String,
-        region: AppRegion = AppRegion.INDIA
+        region: AppRegion = AppRegion.CHINA
     ): FitnessTrackerResponse {
         val query = input.lowercase().trim()
-        if (mode == "SUCCESS" && region != AppRegion.INDIA) {
+        if (mode == "SUCCESS" && region != AppRegion.CHINA) {
             return simulateFromRegionPack(input, query, RegionPacks.pack(region))
         }
         return when (mode) {
             "SUCCESS" -> {
-                // Align totals with India pack mid-range priors where possible.
-                val s = IndiaRegionPack
+                // Align totals with China pack mid-range priors where possible.
+                val s = ChinaRegionPack
                 val (dish, c, p, cr, f) = when {
                     "chole" in query || "chana masala" in query || "chole bhature" in query ||
                         "bhature" in query || "bhatura" in query -> {
@@ -2266,25 +2272,25 @@ class FitnessRepository(
         // name to (weightG, fractionOfMacros)
         val parts: List<Pair<String, Pair<Int, Double>>> = when {
             "chole" in query || "bhature" in query || "bhatura" in query -> listOf(
-                "Chole" to (IndiaRegionPack.CHOLE_KATORI.weightG to 0.38),
-                "Bhatura" to (IndiaRegionPack.BHATURA.weightG to 0.52),
-                "Ghee/oil" to (IndiaRegionPack.GHEE_TSP.weightG to 0.10)
+                "Chole" to (ChinaRegionPack.CHOLE_KATORI.weightG to 0.38),
+                "Bhatura" to (ChinaRegionPack.BHATURA.weightG to 0.52),
+                "Ghee/oil" to (ChinaRegionPack.GHEE_TSP.weightG to 0.10)
             )
             "rajma" in query -> listOf(
-                "Rajma" to (IndiaRegionPack.DAL_KATORI.weightG to 0.45),
-                "Cooked rice" to (IndiaRegionPack.RICE_BOWL.weightG to 0.55)
+                "Rajma" to (ChinaRegionPack.DAL_KATORI.weightG to 0.45),
+                "Cooked rice" to (ChinaRegionPack.RICE_BOWL.weightG to 0.55)
             )
             "paratha" in query || "parantha" in query -> listOf(
-                "Aloo paratha" to (IndiaRegionPack.PARATHA.weightG to 0.70),
-                "Curd" to (IndiaRegionPack.CURD_KATORI.weightG to 0.30)
+                "Aloo paratha" to (ChinaRegionPack.PARATHA.weightG to 0.70),
+                "Curd" to (ChinaRegionPack.CURD_KATORI.weightG to 0.30)
             )
             "kadhi" in query -> listOf(
                 "Kadhi pakora" to (200 to 0.55), "Cooked rice" to (150 to 0.45)
             )
             "dal makhani" in query -> listOf(
-                "Dal makhani" to (IndiaRegionPack.DAL_KATORI.weightG to 0.60),
-                "Wheat roti" to (IndiaRegionPack.ROTI.weightG to 0.28),
-                "Ghee/oil" to (IndiaRegionPack.GHEE_TSP.weightG to 0.12)
+                "Dal makhani" to (ChinaRegionPack.DAL_KATORI.weightG to 0.60),
+                "Wheat roti" to (ChinaRegionPack.ROTI.weightG to 0.28),
+                "Ghee/oil" to (ChinaRegionPack.GHEE_TSP.weightG to 0.12)
             )
             "butter chicken" in query || "murgh makhani" in query -> listOf(
                 "Butter chicken" to (200 to 0.55), "Naan" to (100 to 0.45)
@@ -2293,7 +2299,7 @@ class FitnessRepository(
                 "Palak paneer" to (180 to 0.70), "Wheat roti" to (70 to 0.30)
             )
             "samosa" in query -> listOf(
-                "Samosa" to (IndiaRegionPack.SAMOSA.weightG to 1.0)
+                "Samosa" to (ChinaRegionPack.SAMOSA.weightG to 1.0)
             )
             "biryani" in query -> listOf(
                 "Basmati rice" to (180 to 0.45), "Chicken" to (90 to 0.40), "Oil & spices" to (20 to 0.15)
@@ -2308,25 +2314,25 @@ class FitnessRepository(
                 "Milk" to (100 to 0.60), "Sugar" to (10 to 0.30), "Tea decoction" to (90 to 0.10)
             )
             "sabzi" in query || "sabji" in query -> listOf(
-                "Wheat roti" to (IndiaRegionPack.ROTI.weightG * 2 to 0.40),
-                "Mixed sabzi" to (IndiaRegionPack.SABZI_DRY.weightG to 0.50),
-                "Ghee/oil" to (IndiaRegionPack.GHEE_TSP.weightG to 0.10)
+                "Wheat roti" to (ChinaRegionPack.ROTI.weightG * 2 to 0.40),
+                "Mixed sabzi" to (ChinaRegionPack.SABZI_DRY.weightG to 0.50),
+                "Ghee/oil" to (ChinaRegionPack.GHEE_TSP.weightG to 0.10)
             )
             "dal" in query && "chawal" in query -> listOf(
-                "Dal tadka" to (IndiaRegionPack.DAL_KATORI.weightG to 0.40),
-                "Cooked rice" to (IndiaRegionPack.RICE_BOWL.weightG to 0.60)
+                "Dal tadka" to (ChinaRegionPack.DAL_KATORI.weightG to 0.40),
+                "Cooked rice" to (ChinaRegionPack.RICE_BOWL.weightG to 0.60)
             )
             "dal" in query -> listOf(
-                "Dal tadka" to (IndiaRegionPack.DAL_KATORI.weightG to 0.50),
-                "Wheat roti" to (IndiaRegionPack.ROTI.weightG to 0.38),
-                "Ghee/oil" to (IndiaRegionPack.GHEE_TSP.weightG to 0.12)
+                "Dal tadka" to (ChinaRegionPack.DAL_KATORI.weightG to 0.50),
+                "Wheat roti" to (ChinaRegionPack.ROTI.weightG to 0.38),
+                "Ghee/oil" to (ChinaRegionPack.GHEE_TSP.weightG to 0.12)
             )
             "dosa" in query -> listOf(
                 "Dosa crepe" to (90 to 0.45), "Potato masala" to (80 to 0.40), "Chutney" to (40 to 0.15)
             )
             "roti" in query || "chapati" in query || "phulka" in query -> listOf(
-                "Wheat roti" to (IndiaRegionPack.ROTI.weightG * 2 to 0.45),
-                "Dal" to (IndiaRegionPack.DAL_KATORI.weightG to 0.55)
+                "Wheat roti" to (ChinaRegionPack.ROTI.weightG * 2 to 0.45),
+                "Dal" to (ChinaRegionPack.DAL_KATORI.weightG to 0.55)
             )
             "idli" in query -> listOf(
                 "Idli" to (120 to 0.50), "Sambhar" to (150 to 0.50)

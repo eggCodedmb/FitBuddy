@@ -296,6 +296,11 @@ class BackupManager(
                         firstName = current.firstName,
                         lastName = current.lastName,
                         cloudBackupPasswordSet = current.cloudBackupPasswordSet,
+                        // WebDAV account is device-local (never in backup JSON).
+                        webDavUrl = current.webDavUrl,
+                        webDavUser = current.webDavUser,
+                        webDavPassword = current.webDavPassword,
+                        webDavDirectory = current.webDavDirectory,
                     )
             )
         }

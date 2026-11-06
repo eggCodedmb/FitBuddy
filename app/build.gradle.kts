@@ -1,3 +1,4 @@
+import java.util.Base64
 import java.util.Properties
 
 plugins {
@@ -33,6 +34,25 @@ val backupApiKeyBlobEscaped = "VFlMVkBTUkBIVVACWxQSSxUFBwxMV0MAVxobVAcCCBQVT0QEU
 val mongoDbNameRaw: String =
     System.getenv("MONGO_DB_NAME")
         ?: localProperties.getProperty("MONGO_DB_NAME", "fitbuddy")
+
+// Jianguoyun (坚果云) WebDAV backup defaults. Read from local.properties / env only — never
+// committed. The password (an app-specific WebDAV password) is XOR+Base64 obfuscated into
+// BuildConfig and can be overridden on-device in Settings → Backup.
+fun webDavProp(key: String, default: String = ""): String =
+    System.getenv(key) ?: localProperties.getProperty(key, default)
+val webDavMaskSeed = "fitbuddy.webdav.v1"
+fun obfuscateForBuildConfig(plain: String, maskSeed: String): String {
+    if (plain.isEmpty()) return ""
+    val mask = maskSeed.toByteArray(Charsets.UTF_8)
+    val bytes = plain.toByteArray(Charsets.UTF_8)
+    val out = ByteArray(bytes.size) { i -> (bytes[i].toInt() xor mask[i % mask.size].toInt()).toByte() }
+    return Base64.getEncoder().encodeToString(out)
+}
+fun escapeForBuildConfig(raw: String): String = raw.replace("\\", "\\\\").replace("\"", "\\\"")
+val webDavUrlEscaped = escapeForBuildConfig(webDavProp("WEBDAV_URL", "https://dav.jianguoyun.com/dav/"))
+val webDavUserEscaped = escapeForBuildConfig(webDavProp("WEBDAV_USER"))
+val webDavDirEscaped = escapeForBuildConfig(webDavProp("WEBDAV_DIR", "fit"))
+val webDavPasswordBlob = obfuscateForBuildConfig(webDavProp("WEBDAV_PASSWORD"), webDavMaskSeed)
 
 val cloudBackupBaseUrlEscaped = cloudBackupBaseUrlRaw
     .replace("\\", "\\\\")
@@ -92,6 +112,11 @@ android {
         buildConfigField("String", "BACKUP_API_KEY_MASK", "\"$backupApiKeyMaskSeed\"")
         buildConfigField("String", "CLOUD_BACKUP_BASE_URL", "\"$cloudBackupBaseUrlEscaped\"")
         buildConfigField("String", "MONGO_DB_NAME", "\"$mongoDbNameEscaped\"")
+        buildConfigField("String", "WEBDAV_URL", "\"$webDavUrlEscaped\"")
+        buildConfigField("String", "WEBDAV_USER", "\"$webDavUserEscaped\"")
+        buildConfigField("String", "WEBDAV_DIR", "\"$webDavDirEscaped\"")
+        buildConfigField("String", "WEBDAV_PASSWORD_BLOB", "\"$webDavPasswordBlob\"")
+        buildConfigField("String", "WEBDAV_PASSWORD_MASK", "\"$webDavMaskSeed\"")
     }
 
     // github flavor: checks GitHub Releases and downloads the APK. fdroid flavor: checks

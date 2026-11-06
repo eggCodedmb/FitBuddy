@@ -2,6 +2,8 @@ package com.anant.fitbuddy.data.settings
 
 import com.anant.fitbuddy.BuildConfig
 import com.anant.fitbuddy.data.backup.mongo.MongoUriVault
+import com.anant.fitbuddy.data.backup.webdav.WebDavConfig
+import com.anant.fitbuddy.data.backup.webdav.WebDavCredentials
 import com.anant.fitbuddy.data.remote.dto.ModelCatalogModality
 
 /** Static color palette when Material You (dynamic color) is off. */
@@ -221,8 +223,8 @@ data class AppSettings(
      */
     val diagnosticLoggingEnabled: Boolean = false,
     /**
-     * Diet/region pack for AI prompts and offline staples: `INDIA`, `US` (North America:
-     * US + Canada), `EUROPE`, or `LATIN_AMERICA`.
+     * Diet/region pack for AI prompts and offline staples: `CHINA`, `US` (North America:
+     * US + Canada), `EUROPE`, or `LATIN_AMERICA`. Legacy `INDIA` maps to `CHINA`.
      * Empty until the user finishes the region selection page (or restores a backup that has it).
      */
     val region: String = "",
@@ -292,6 +294,15 @@ data class AppSettings(
     val mongoLastUploadOk: Boolean = false,
     val mongoLastError: String = "",
     /**
+     * WebDAV cloud backup target (Jianguoyun / 坚果云 by default). Device-local — never written
+     * to backup JSON. Defaults come from the build (`local.properties`) and can be edited in
+     * Settings → Backup. [webDavPassword] is the WebDAV *app* password, not the login password.
+     */
+    val webDavUrl: String = WebDavConfig.defaultUrl,
+    val webDavUser: String = WebDavConfig.defaultUser,
+    val webDavPassword: String = WebDavConfig.defaultPassword,
+    val webDavDirectory: String = WebDavConfig.defaultDirectory,
+    /**
      * Epoch ms of the last successful backup (local export or cloud upload).
      * Used to gate auto-install after "Export backup & update" (must be fresh).
      */
@@ -335,11 +346,23 @@ data class AppSettings(
             this
         }
 
-    /** True when cloud backup is opted in and this build has a vault URI + Support ID. */
+    /** WebDAV endpoint/account used for cloud backup. */
+    fun webDavCredentials(): WebDavCredentials = WebDavCredentials(
+        url = webDavUrl,
+        user = webDavUser,
+        password = webDavPassword,
+        directory = webDavDirectory
+    )
+
+    /** True when a complete WebDAV account (URL, user, app password) is configured. */
+    val isWebDavConfigured: Boolean
+        get() = webDavCredentials().isComplete
+
+    /** True when cloud backup is opted in and a WebDAV account + Support ID are available. */
     val isMongoBackupConfigured: Boolean
         get() = cloudBackupEnabled &&
             supportId.isNotBlank() &&
-            MongoUriVault.isAvailable()
+            isWebDavConfigured
 
     /**
      * True when a successful backup was recorded within [BACKUP_FRESHNESS_FOR_UPDATE_MS]
