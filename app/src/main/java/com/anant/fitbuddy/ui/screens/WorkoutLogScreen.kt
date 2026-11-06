@@ -107,7 +107,12 @@ fun WorkoutLogDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         var sessionName by remember {
-            mutableStateOf(initialDraft?.name ?: WorkoutDraft.DEFAULT_NAME)
+            val defaultName = if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese()) "训练" else WorkoutDraft.DEFAULT_NAME
+            val resolvedName = initialDraft?.name?.let {
+                if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese() && it.equals(WorkoutDraft.DEFAULT_NAME, ignoreCase = true)) "训练"
+                else it
+            } ?: defaultName
+            mutableStateOf(resolvedName)
         }
         val exercises = remember {
             mutableStateListOf<ExerciseDraft>().apply { initialDraft?.exercises?.let(::addAll) }

@@ -2482,9 +2482,19 @@ class MainViewModel(
 
     private fun formatProgressInsightForChat(response: ProgressInsightResponse): String = buildString {
         append(response.summary)
-        response.bodyScore?.let { append("\n\nBody score: $it/100") }
+        response.bodyScore?.let {
+            if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese()) {
+                append("\n\n身体评分：$it/100")
+            } else {
+                append("\n\nBody score: $it/100")
+            }
+        }
         if (response.recommendations.isNotEmpty()) {
-            append("\n\nRecommendations:")
+            if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese()) {
+                append("\n\n改进建议：")
+            } else {
+                append("\n\nRecommendations:")
+            }
             response.recommendations.forEach { append("\n• $it") }
         }
     }

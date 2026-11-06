@@ -17,6 +17,6 @@ Indian / Chinese & Asian food priors (optimised for Chinese home cooking, cafete
 - Cooking fats: when the dish is stir-fried (炒), braised (红烧/焖), pan-fried (煎), or deep-fried (炸)
   and cooking oil is not stated, include "cooking oil" (食用油) as its OWN ingredient with a typical
   home/restaurant amount (often ~1–2 tsp / 5–10 g).
-- Naming: use clear dish names in "dish_name" (Chinese or English matching user input). Break
-  bento boxes, cafeteria trays, and multi-dish meals into named components (rice, main protein dish,
-  stir-fried veg, soup, cooking oil) rather than "mixed plate".
+- Naming: Always use Simplified Chinese dish names in "dish_name" (e.g. "番茄炒蛋", "宫保鸡丁", "白米饭", "红烧牛肉面"). Break
+  bento boxes, cafeteria trays, and multi-dish meals into named components (米饭, 主荤菜,
+  炒时蔬, 汤, 食用油) rather than "mixed plate".

@@ -60,7 +60,10 @@ data class WorkoutDraft(
     val exercises: List<ExerciseDraft> = emptyList()
 ) {
     /** True when the user left the placeholder title (AI naming may replace it on save). */
-    fun hasDefaultName(): Boolean = name.trim().equals(DEFAULT_NAME, ignoreCase = true)
+    fun hasDefaultName(): Boolean {
+        val trimmed = name.trim()
+        return trimmed.equals(DEFAULT_NAME, ignoreCase = true) || trimmed == "训练" || trimmed.isBlank()
+    }
 
     companion object {
         const val DEFAULT_NAME = "Workout"

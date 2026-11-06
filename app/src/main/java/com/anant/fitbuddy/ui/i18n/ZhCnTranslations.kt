@@ -18,6 +18,14 @@ object ZhCnTranslations {
                 return leading + translated + trailing
             }
         }
+        lowerMap[text.lowercase()]?.let { return it }
+        if (trimmed != text) {
+            lowerMap[trimmed.lowercase()]?.let { translated ->
+                val leading = text.takeWhile { it.isWhitespace() }
+                val trailing = text.takeLastWhile { it.isWhitespace() }
+                return leading + translated + trailing
+            }
+        }
         return translateDynamic(text)
     }
 
@@ -41,7 +49,14 @@ object ZhCnTranslations {
         exactMap[raw]?.let { translated ->
             if (text.spanStyles.isEmpty()) return AnnotatedString(translated)
         }
+        lowerMap[raw.lowercase()]?.let { translated ->
+            if (text.spanStyles.isEmpty()) return AnnotatedString(translated)
+        }
         return text
+    }
+
+    private val lowerMap: Map<String, String> by lazy {
+        exactMap.entries.associate { it.key.lowercase() to it.value }
     }
 
     private val exactMap: Map<String, String> = buildMap(4000) {
@@ -180,6 +195,9 @@ object ZhCnTranslations {
         put("Log date", "记录日期")
         put("AI Offline", "AI 离线")
         put("AI Online", "AI 在线")
+        put("AI offline", "AI 离线")
+        put("AI online", "AI 在线")
+        put("AI offline (simulator)", "AI 离线（模拟器）")
 
         // --- Week / 7-Day History ---
         put("7-Day History", "7天历史记录")
@@ -199,15 +217,43 @@ object ZhCnTranslations {
         put("Tap a bar to see that day's calorie & macro breakdown", "点击柱状图查看当天的热量与三大营养素详情")
         put("Tap a point to see that day's calorie & macro breakdown", "点击数据点查看当天的热量与三大营养素详情")
         put("Target line", "目标线")
-        put("Body Composition", "身体成分趋势")
+        put("Body Composition", "身体成分分析")
+        put("Body composition", "身体成分分析")
         put("Tap a point to inspect that reading", "点击数据点查看当次测量详情")
         put("Log at least 1 body measurement in Profile to see trends.", "在「身体」页面记录至少 1 次身体测量数据后即可查看趋势。")
+        put("Weight", "体重")
         put("Weight (kg)", "体重 (kg)")
+        put("Body fat", "体脂率")
         put("Body fat (%)", "体脂率 (%)")
+        put("Muscle mass", "肌肉量")
         put("Muscle (kg)", "肌肉量 (kg)")
         put("Calories Burned · Last 6 months", "运动消耗热量 · 最近 6 个月")
+        put("Calories Burned", "运动消耗热量")
+        put("Calories burned", "运动消耗热量")
+        put("Active days", "活跃天数")
+        put("Avg/day", "日均消耗")
+        put("Target (varies)", "目标（浮动）")
+        put("On target", "达到目标")
+        put("Within ±1 kg green · above by >1 kg yellow · below by >1 kg red", "偏差在 ±1 kg 内为绿色 · 高出 >1 kg 为黄色 · 低于 >1 kg 为红色")
+        put("Within ±1 kg green · below by >1 kg yellow · above by >1 kg red", "偏差在 ±1 kg 内为绿色 · 低于 >1 kg 为黄色 · 高出 >1 kg 为红色")
         put("Weekly totals · tap a point for that week's burned kcal", "每周总计 · 点击数据点查看当周消耗热量")
-        put("AI Progress Coach", "AI 进度教练")
+        put("AI Progress Coach", "AI 趋势洞察教练")
+        put("Progress Coach", "趋势洞察教练")
+        put("Progress insight", "趋势洞察")
+        put("Body Score", "身体评分")
+        put("Body score", "身体评分")
+        put("Great alignment with your goal", "与目标高度契合")
+        put("Making progress, room to improve", "正在稳步进展，仍有提升空间")
+        put("Trend needs attention", "趋势需引起注意")
+        put("Recommendations", "改进建议")
+        put("Continue chat", "继续追问")
+        put("Ask follow-up", "追问教练")
+        put("Leave conversation?", "离开对话？")
+        put("You can keep this chat for next time, or clear it and start fresh when you open the coach again.", "你可以保留本次对话供下次查看，也可以清空内容，在下次打开教练时开启全新对话。")
+        put("Clear & go back", "清空并返回")
+        put("Keep chat", "保留对话")
+        put("Ask about your trends, macros, or body comp…", "询问关于趋势、营养素或身体成分的问题…")
+        put("Thinking…", "思考中…")
         put("Generate insight", "生成 AI 洞察")
         put("Crafting your insight…", "正在生成你的专属洞察…")
         put("Tap Generate insight for a personalised review of your trends.", "点击「生成 AI 洞察」获取针对你近期趋势的个性化分析。")
@@ -242,7 +288,7 @@ object ZhCnTranslations {
         put("Muscle Mass", "肌肉量")
         put("BMR", "基础代谢 (BMR)")
         put("No data in this range", "该时间段暂无数据")
-        put("Recommendations", "建议")
+        put("Recommendations", "改进建议")
         put("Body score", "身体评分")
 
         // --- Body / Profile Screen ---
@@ -808,8 +854,11 @@ object ZhCnTranslations {
         put("Off (default): free models only. On: also list paid models and turn Auto failover off so you pick one model yourself. Refresh skips reachability checks while paid models are shown.", "关闭（默认）：仅列出免费模型。开启：一并列出付费模型并关闭自动故障转移，需手动指定模型。显示付费模型时刷新将跳过连通性检测。")
         put("Active models", "当前生效模型")
         put("Green lines show the models last used successfully (reset to your dropdown picks when you Save AI Settings). Rate-limited models are skipped until the next UTC midnight, unless you save that model again — Save clears its cooldown so Auto retries your selection.", "绿色标记显示最近一次成功调用的模型（保存 AI 设置时重置为下拉选中的模型）。受速率限制的模型会在 UTC 午夜前被跳过，除非重新保存该模型 — 保存会重置冷却状态以便自动重试。")
-        put("Photo model (vision)", "拍照模型 (视觉)")
-        put("Photo model (free + vision)", "拍照模型 (免费 + 视觉)")
+        put("Photo model", "视觉模型")
+        put("Photo model (vision)", "视觉模型")
+        put("Photo model (free + vision)", "视觉模型 (免费 + 视觉)")
+        put("Photo model (free)", "视觉模型 (免费)")
+        put("Text model", "文本模型")
         put("Text model (free)", "文本模型 (免费)")
         put("Used for typed logs and \"recalculate with AI\" (no photo). Leave blank to reuse the photo model. Order follows the failover ladder.", "用于纯文本饮食记录和“AI 重新计算”（无图片）。留空则复用拍照视觉模型。排序遵循故障转移梯队。")
         put("Get a key from Google AI Studio (aistudio.google.com).", "前往 Google AI Studio (aistudio.google.com) 获取密钥。")
@@ -1319,6 +1368,75 @@ object ZhCnTranslations {
         put("Good evening", "晚上好")
         put("What’s your name?", "怎么称呼你？")
         put("We’ll use your first name in the dashboard greeting.", "我们将使用你的名字在首页向你打招呼。")
+
+        // --- Workouts & AI Naming ---
+        put("Suggest name with AI", "AI 智能命名")
+        put("Suggest name", "AI 智能命名")
+        put("Chest & Triceps", "胸肌与三头肌")
+        put("Back & Biceps", "背部与二头肌")
+        put("Leg Workout", "腿部训练")
+        put("Legs", "腿部训练")
+        put("Full Body", "全身训练")
+        put("Full Body Workout", "全身训练")
+        put("Push Day", "推力日")
+        put("Pull Day", "拉力日")
+        put("Cardio Session", "有氧训练")
+        put("Upper Body", "上肢训练")
+        put("Lower Body", "下肢训练")
+        put("Core Workout", "核心训练")
+        put("Shoulders & Arms", "肩部与手臂")
+        put("Back Day", "背部训练")
+        put("Chest Day", "胸部训练")
+        put("Leg Day", "腿部训练")
+        put("Arm Day", "手臂训练")
+        put("Shoulder Day", "肩部训练")
+        put("Workout", "训练")
+
+        // --- Weekdays & Months ---
+        put("Mon", "周一")
+        put("Tue", "周二")
+        put("Wed", "周三")
+        put("Thu", "周四")
+        put("Fri", "周五")
+        put("Sat", "周六")
+        put("Sun", "周日")
+        put("Monday", "星期一")
+        put("Tuesday", "星期二")
+        put("Wednesday", "星期三")
+        put("Thursday", "星期四")
+        put("Friday", "星期五")
+        put("Saturday", "星期六")
+        put("Sunday", "星期日")
+        put("Jan", "1月")
+        put("Feb", "2月")
+        put("Mar", "3月")
+        put("Apr", "4月")
+        put("May", "5月")
+        put("Jun", "6月")
+        put("Jul", "7月")
+        put("Aug", "8月")
+        put("Sep", "9月")
+        put("Oct", "10月")
+        put("Nov", "11月")
+        put("Dec", "12月")
+        put("January", "一月")
+        put("February", "二月")
+        put("March", "三月")
+        put("April", "四月")
+        put("May", "五月")
+        put("June", "六月")
+        put("July", "七月")
+        put("August", "八月")
+        put("September", "九月")
+        put("October", "十月")
+        put("November", "十一月")
+        put("December", "十二月")
+
+        // --- Stats & Servings ---
+        put("Total", "总消耗")
+        put("Active days", "活跃天数")
+        put("Avg/day", "日均消耗")
+        put("Estimated serving", "预估份量")
     }
 
     private val loggedFoodRegex = Regex("""^Logged (.+) · (\d+) kcal$""")
@@ -1408,8 +1526,29 @@ object ZhCnTranslations {
     private val removeExerciseNameRegex = Regex("""^Remove (.+)$""")
     private val editExerciseNameRegex = Regex("""^Edit (.+)$""")
     private val deleteFoodNamedRegex = Regex("""^Delete (.+)$""")
+    private val kcalTargetKcalRegex = Regex("""^(\d+)\s*kcal\s*·\s*target\s+(\d+)\s*(?:kcal)?$""", RegexOption.IGNORE_CASE)
+    private val kcalTargetGenericRegex = Regex("""^(\d+)\s*kcal\s*·\s*target\s+(.+)$""", RegexOption.IGNORE_CASE)
+    private val usingProviderRegex = Regex("""^Using\s+(gemini|openrouter|ollama|openai|custom)$""", RegexOption.IGNORE_CASE)
+    private val latestMetricRegex = Regex("""^Latest\s+([0-9.]+.*)$""")
+    private val metricOverLastReadingsRegex = Regex("""^([+-]?[0-9.]+.*)\s+over\s+last\s+(\d+)\s+readings$""")
 
     private fun translateDynamic(text: String): String {
+        kcalTargetKcalRegex.matchEntire(text)?.let { m ->
+            return "${m.groupValues[1]} kcal · 目标 ${m.groupValues[2]} kcal"
+        }
+        kcalTargetGenericRegex.matchEntire(text)?.let { m ->
+            val target = translate(m.groupValues[2])
+            return "${m.groupValues[1]} kcal · 目标 $target"
+        }
+        usingProviderRegex.matchEntire(text)?.let { m ->
+            return "正在使用 ${m.groupValues[1].lowercase()}"
+        }
+        latestMetricRegex.matchEntire(text)?.let { m ->
+            return "最新测量 ${m.groupValues[1]}"
+        }
+        metricOverLastReadingsRegex.matchEntire(text)?.let { m ->
+            return "最近 ${m.groupValues[2]} 次测量变化 ${m.groupValues[1]}"
+        }
         greetingNameRegex.matchEntire(text)?.let { m ->
             val greet = translate(m.groupValues[1])
             return "$greet，${m.groupValues[2]}"

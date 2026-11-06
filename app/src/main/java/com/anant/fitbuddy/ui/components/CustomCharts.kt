@@ -704,10 +704,11 @@ fun WeekMacroBarChart(
                 }
 
                 if (showDayLabels) {
-                    val labelLayout = textMeasurer.measure(day.weekdayLabel)
+                    val weekdayText = AppI18n.translate(day.weekdayLabel)
+                    val labelLayout = textMeasurer.measure(weekdayText)
                     drawText(
                         textMeasurer = textMeasurer,
-                        text = day.weekdayLabel,
+                        text = weekdayText,
                         topLeft = Offset(
                             centerX - labelLayout.size.width / 2,
                             size.height - paddingBottom + 14f
@@ -1365,7 +1366,8 @@ fun CaloriesBurnedHeatmap(
                             }
                     ) {
                         grid.monthLabels.forEach { month ->
-                            val measured = textMeasurer.measure(month.label, monthLabelStyle)
+                            val monthText = AppI18n.translate(month.label)
+                            val measured = textMeasurer.measure(monthText, monthLabelStyle)
                             drawText(
                                 textLayoutResult = measured,
                                 topLeft = Offset(month.weekIndex * cellStridePx, 0f)

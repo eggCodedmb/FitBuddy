@@ -50,6 +50,7 @@ EXACTLY this schema (double quotes only; never embed recommendations inside summ
   "body_score": Int or null
 }
 "summary" must be plain prose only. Put each tip as its own string in "recommendations".
+When Chinese language is requested or region is China, "summary" and "recommendations" MUST be written in Simplified Chinese (简体中文).
 
 User progress data (compressed):
 {{COMPRESSED_METRICS}}

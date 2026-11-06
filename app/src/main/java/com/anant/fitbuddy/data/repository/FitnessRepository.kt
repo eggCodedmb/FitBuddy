@@ -1333,10 +1333,15 @@ class FitnessRepository(
 
             "EXERCISE_LOGGED" -> {
                 val exercise = response.exerciseAnalysis
-                val activityName = exercise?.activityDetected
+                val rawActivity = exercise?.activityDetected
                 val caloriesBurned = exercise?.caloriesBurned
-                if (activityName == null || caloriesBurned == null) {
+                if (rawActivity == null || caloriesBurned == null) {
                     return AnalysisOutcome.Error("Missing exercise analysis in response")
+                }
+                val activityName = if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese()) {
+                    com.anant.fitbuddy.ui.i18n.AppI18n.translate(rawActivity)
+                } else {
+                    rawActivity
                 }
                 val durationMinutes = exercise.durationMinutes ?: 30
                 exerciseLogDao.insertExerciseLog(
@@ -1392,7 +1397,7 @@ class FitnessRepository(
             }
             ?: listOf(
                 IngredientDraft.fromAbsolute(
-                    name = "Estimated serving",
+                    name = if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese()) "预估份量" else "Estimated serving",
                     weightG = 250,
                     calories = food.macros.calories,
                     protein = food.macros.proteinG,
@@ -1401,8 +1406,13 @@ class FitnessRepository(
                 )
             )
         // Dish-level macros are ignored; FoodDraft totals are the sum of ingredients.
+        val finalDishName = if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese()) {
+            com.anant.fitbuddy.ui.i18n.AppI18n.translate(food.dishName)
+        } else {
+            food.dishName
+        }
         return FoodDraft(
-            dishName = food.dishName,
+            dishName = finalDishName,
             timestamp = timestamp,
             ingredients = ingredients,
             iconTopic = LogIconTopic.normalizeFood(food.iconTopic)
@@ -1805,7 +1815,12 @@ class FitnessRepository(
         val (result, _) = withAiFailover(settings) { s ->
             remoteAiDataSource.suggestWorkoutName(s, exerciseNames)
         }
-        return result.name.trim().ifBlank { WorkoutDraft.DEFAULT_NAME }
+        val raw = result.name.trim().ifBlank { WorkoutDraft.DEFAULT_NAME }
+        return if (com.anant.fitbuddy.ui.i18n.AppI18n.isChinese()) {
+            com.anant.fitbuddy.ui.i18n.AppI18n.translate(raw)
+        } else {
+            raw
+        }
     }
 
     private suspend fun ensureExercisePreset(

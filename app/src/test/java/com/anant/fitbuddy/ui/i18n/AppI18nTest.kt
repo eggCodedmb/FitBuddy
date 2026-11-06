@@ -87,5 +87,41 @@ class AppI18nTest {
             "大部分时间久坐，极少有规划运动",
             AppI18n.translate("Mostly seated with little planned exercise", AppLanguage.ZH_CN, Locale.US)
         )
+        assertEquals(
+            "AI 在线",
+            AppI18n.translate("AI online", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "文本模型",
+            AppI18n.translate("Text model", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "身体成分分析",
+            AppI18n.translate("Body Composition", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "2100 kcal · 目标 2000 kcal",
+            AppI18n.translate("2100 kcal · target 2000", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "胸肌与三头肌",
+            AppI18n.translate("Chest & Triceps", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "身体评分",
+            AppI18n.translate("Body Score", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "改进建议",
+            AppI18n.translate("Recommendations", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "周一",
+            AppI18n.translate("Mon", AppLanguage.ZH_CN, Locale.US)
+        )
+        assertEquals(
+            "1月",
+            AppI18n.translate("Jan", AppLanguage.ZH_CN, Locale.US)
+        )
     }
 }
